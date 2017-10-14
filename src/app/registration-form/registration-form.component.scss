@@ -1,0 +1,22 @@
+.registrationForm {
+  input[type=text] {
+    border: none;
+    border-bottom: 1px solid #CCC;
+    border-radius: 0;
+  }
+  input[type=password] {
+    border: none;
+    border-bottom: 1px solid #CCC;
+    border-radius: 0;
+  }
+  input[type=email] {
+    border: none;
+    border-bottom: 1px solid #CCC;
+    border-radius: 0;
+  }
+  select {
+    border: none;
+    border-bottom: 1px solid #CCC;
+    border-radius: 0;
+  }
+}

@@ -1,0 +1,119 @@
+<md-dialog-actions>
+
+  <button md-raised-button (click)="closeConfirm()" class="back-btn">Back</button>
+
+</md-dialog-actions>
+
+<p md-dialog-title class="text-center font-v-small align-v-top">{{data.name}}</p>
+
+<md-dialog-content>
+  <hr />
+  <md-card class="no-shadow card-fixed-sized">
+
+  <md-card-header>
+
+    <div md-card-avatar class="header-image"></div>
+
+    <md-card-title>{{data.name}}</md-card-title>
+
+    <md-card-subtitle *ngIf="data.isOnline; then onlineBlock else offLineBlock"></md-card-subtitle>
+
+    <ng-template #onlineBlock>
+     <span class="user-indicator online"></span><span class="indicator-text">Online</span>
+    </ng-template>
+
+    <ng-template #offLineBlock>
+      <span class="user-indicator offline"></span><span class="indicator-text">Offline</span>
+    </ng-template>
+
+  </md-card-header>
+
+  <md-card-content>
+
+    <div *ngIf="data.isFriend; then friendBlock else addFriendBlock"></div>
+
+    <ng-template #friendBlock></ng-template>
+
+    <ng-template #addFriendBlock>
+
+      <p>Add them so they can message you, and so you can send and receive messages.</p>
+
+      <button
+        md-raised-button
+        type="button"
+        (click)="sendFriendRequest(data.friendId)"
+        [hidden]="isFriend == 'confirm' || isFriend == 'pending'">
+        ADD ON MESSENGER
+      </button>
+
+    </ng-template>
+
+    <div *ngIf="data.isFriend == 'pending'">
+
+      <p>{{data.name}} has sent you the Friend Request.</p>
+
+      <button
+        md-raised-button
+        (click)="confirmRequest(data.friendId,'accept')"
+        type="button">
+        CONFIRM
+      </button>
+
+      <button
+        md-raised-button
+        (click)="confirmRequest(data.friendId,'delete')"
+        type="button">
+        Deny
+      </button>
+
+    </div>
+
+    <hr />
+
+    <div class="chat-pane">
+
+      <div class="message-section" *ngIf="conversations !== undefined">
+
+        <div *ngFor="let item of conversations">
+
+          <div class="sent" *ngIf="item.requestType=='sent'">
+
+            <p>{{item.message}}</p>
+
+          </div>
+
+          <div class="received" *ngIf="item.requestType=='recieved'">
+
+            <p>{{item.message}}</p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="send-message-pane">
+
+      <form class="form-inline" [formGroup]="messageForm" (ngSubmit)="sendMessage(messageForm.value)">
+
+        <div class="form-group mx-sm-2">
+
+          <input class="form-control type-pane" type="text" formControlName="chatMessage" />
+
+        </div>
+
+        <button md-raised-button type="submit" class="send-message"><i class="material-icons">send</i></button>
+
+      </form>
+
+    </div>
+
+  </md-card-content>
+
+
+
+</md-card>
+
+</md-dialog-content>

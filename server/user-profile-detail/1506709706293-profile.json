@@ -1,0 +1,10 @@
+{
+  "fName": "Ritesh",
+  "lName": "Oberoi",
+  "name": "Ritesh Oberoi",
+  "email": "ritesh@gmail.com",
+  "gender": "Male",
+  "birthday": "1/1/1999",
+  "friendListFile": "1506709706293-friend-list.json",
+  "messageBook": "1506709706293-message-book.json"
+}

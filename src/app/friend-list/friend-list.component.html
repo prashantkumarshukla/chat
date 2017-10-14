@@ -1,0 +1,13 @@
+<md-card *ngFor="let item of getResponse">
+
+  <md-card-content class="user-list" (click)="userDetailOpenDialog(item)">
+
+    <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
+
+    <span class='indicator' [ngClass]="{'online' : item.isOnline}"></span>
+
+    <span>{{item.name}}</span>
+
+  </md-card-content>
+
+</md-card>

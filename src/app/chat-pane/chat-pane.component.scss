@@ -1,0 +1,45 @@
+.header-image {
+  background-image: url("../../assets/profile-pics/men-dummy-pic.jpg");
+  background-size: cover;
+}
+
+.message-pane {
+
+  .mat-card:not([class*=mat-elevation-z]) {
+    box-shadow: none;
+  }
+
+  .send-message{
+    display: inline-block;
+    clear: both;
+    background: #00cc00;
+    color: #FFFFFF;
+    padding: 5px 10px;
+    border-radius: 8px;
+    overflow-y: hidden;
+    float: left;
+    margin-bottom: 20px;
+
+    .header-image,.user-message {
+      float: right;
+      overflow-y: hidden;
+      display: block;
+    }
+  }
+  .received-message {
+    display: inline-block;
+    clear: both;
+    background: #CCCCCC;
+    padding: 5px 10px;
+    border-radius: 8px;
+    overflow-y: hidden;
+    float: right;
+    margin-bottom: 20px;
+
+    .header-image,.user-message {
+      float: left;
+      overflow-y: hidden;
+      display: block;
+    }
+  }
+}

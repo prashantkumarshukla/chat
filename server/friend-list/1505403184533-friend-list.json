@@ -1,0 +1,19 @@
+{
+  "firendList": [
+    {
+      "friendId": "1505579099151",
+      "status": true,
+      "reqType": "received"
+    },
+    {
+      "friendId": "1505579128948",
+      "status": "pending",
+      "reqType": "sent"
+    },
+    {
+      "friendId": "1506709706293",
+      "status": true,
+      "reqType": "sent"
+    }
+  ]
+}

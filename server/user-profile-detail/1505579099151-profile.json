@@ -1,0 +1,10 @@
+{
+  "fName": "Kapil",
+  "lName": "Kumar",
+  "name": "Kapil Kumar",
+  "email": "kapkumar83@gmail.com",
+  "gender": "Male",
+  "birthday": "6/10/1983",
+  "friendListFile": "1505579099151-friend-list.json",
+  "messageBook": "1505579099151-message-book.json"
+}

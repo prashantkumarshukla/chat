@@ -1,0 +1,64 @@
+{
+  "users": [
+    {
+      "fName": "ompreeti",
+      "lName": "chaursiya",
+      "email": "ompreeti@gmail.com",
+      "userPwd": "05051982",
+      "gender": "Female",
+      "birthday": "undefined/undefined/undefined",
+      "id": "1505403067504",
+      "type": "normal"
+    },
+    {
+      "fName": "Prashant",
+      "lName": "shukla",
+      "email": "prashantkumarshukla@gmail.com",
+      "userPwd": "05051982",
+      "gender": "Male",
+      "birthday": "5/5/1982",
+      "id": "1505403184533",
+      "type": "normal"
+    },
+    {
+      "fName": "Kapil",
+      "lName": "Kumar",
+      "email": "kapkumar83@gmail.com",
+      "userPwd": "05051982",
+      "gender": "Male",
+      "birthday": "6/10/1983",
+      "id": "1505579099151",
+      "type": "normal"
+    },
+    {
+      "fName": "Srihari",
+      "lName": "naidu",
+      "email": "srihari@gmail.com",
+      "userPwd": "05051982",
+      "gender": "Male",
+      "birthday": "8/1/1989",
+      "id": "1505579128948",
+      "type": "normal"
+    },
+    {
+      "fName": "sanjeet",
+      "lName": "kumar",
+      "email": "sanjeet@gmail.com",
+      "userPwd": "05051982",
+      "gender": "Male",
+      "birthday": "6/9/1982",
+      "id": "1505579161863",
+      "type": "normal"
+    },
+    {
+      "fName": "Ritesh",
+      "lName": "Oberoi",
+      "email": "ritesh@gmail.com",
+      "userPwd": "123456",
+      "gender": "Male",
+      "birthday": "1/1/1999",
+      "id": "1506709706293",
+      "type": "normal"
+    }
+  ]
+}

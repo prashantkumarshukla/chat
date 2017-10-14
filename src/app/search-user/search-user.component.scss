@@ -1,0 +1,27 @@
+$grey : #CCCCCC;
+$white : #FFFFFF;
+$black : #000000;
+$green : #00cc00;
+
+.search-field {
+  border:none;
+  border-bottom: 1px solid #CCCCCC;
+  border-radius: 0;
+}
+
+.user-list {
+
+  .indicator {
+    border-radius: 5px;
+    padding: 6px;
+    width: 12px;
+    display: block;
+    background: $grey;
+    position: absolute;
+    z-index: 1;
+    bottom: 22px;
+  }
+  .online {
+    background: $green;
+  }
+}

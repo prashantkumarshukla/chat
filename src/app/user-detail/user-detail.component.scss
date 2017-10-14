@@ -1,0 +1,103 @@
+$green : #00cc00;
+$grey : #CCCCCC;
+$black : #000000;
+$white : #FFFFFF;
+.back-btn {
+  width: auto;
+  box-shadow: none;
+  cursor: pointer;
+  position: absolute;
+  margin: -30px 0 0 -33px;
+  background: none;
+  outline: none;
+}
+.align-v-top {
+  position: absolute;
+  margin-top: -38px;
+  margin-left: 82px;
+}
+.no-shadow {
+  box-shadow: none !important;
+}
+.header-image {
+  background-image: url("../../assets/profile-pics/men-dummy-pic.jpg");
+  background-size: cover;
+}
+
+.card-fixed-bottom {
+  position: fixed;
+  bottom: 125px;
+}
+
+.mat-card-title{
+
+  margin-bottom: -5px !important;
+}
+
+.user-indicator {
+  border-radius: 5px;
+  padding: 4px;
+  width: 8px;
+  display: inline-block;
+  background: $grey;
+  &.online {
+    background: $green;
+  }
+}
+.indicator-text {
+  font-size: 0.8rem;
+}
+
+.chat-pane {
+  height: 200px;
+  overflow-y: auto;
+  display: block;
+
+  .message-section{
+
+    display: block;
+    overflow: hidden;
+
+    .sent {
+      display: block;
+      float: right;
+      width: 100%;
+      text-align: right;
+
+      &:before{
+        content:"me: ";
+        font-size: 0.75rem;
+        font-style: italic;
+        color: $grey;
+      }
+
+      p {
+        display: inline-block;
+        background: $grey;
+        color: $black;
+        padding: 5px 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 6px;
+      }
+    }
+
+    .received {
+      display: block;
+      float: left;
+      width: 100%;
+      text-align: left;
+
+      p {
+        display: inline-block;
+        background: $green;
+        color: $white;
+        padding: 5px 10px;
+        -webkit-border-radius: 10px;
+        -moz-border-radius: 10px;
+        border-radius: 6px;
+      }
+    }
+  }
+}
+

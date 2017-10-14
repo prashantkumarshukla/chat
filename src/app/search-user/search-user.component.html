@@ -1,0 +1,41 @@
+<md-card>
+
+  <md-card-content>
+
+    <form [formGroup]="searchform" (ngSubmit)="searchUser(searchform.value)">
+
+      <div class="form-group">
+
+        <div class="input-group">
+
+          <input class="form-control search-field" formControlName="searchField" placeholder="Type to search" type="text"/>
+
+          <!--<button class="input-group-addon" type="submit">-->
+
+            <!--<i class="fa fa-search"></i>-->
+
+          <!--</button>-->
+
+        </div>
+
+      </div>
+
+    </form>
+
+  </md-card-content>
+
+</md-card>
+
+<md-card *ngFor="let item of searchResponse" (click)="userDetailOpenDialog(item)">
+
+  <md-card-content class="user-list">
+
+    <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
+
+    <span class='indicator' [ngClass]="{'online' : item.isOnline}"></span>
+
+    <span>{{item.name}}</span>
+
+  </md-card-content>
+
+</md-card>

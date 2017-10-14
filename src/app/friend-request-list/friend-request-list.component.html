@@ -1,0 +1,14 @@
+<md-card *ngFor="let item of friendRequest" (click)="userDetailOpenDialog(item.detail)">
+
+  <md-card-content class="user-list">
+
+    <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
+
+    <!--<span class='indicator' [ngClass]="{'online' : item.isOnline}"></span>-->
+
+    <span>{{item.detail.fName}} {{item.detail.lName}}</span>
+
+
+  </md-card-content>
+
+</md-card>
