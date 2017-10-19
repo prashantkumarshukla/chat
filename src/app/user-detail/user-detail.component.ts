@@ -49,10 +49,20 @@ export class UserDetailComponent implements OnInit,OnDestroy {
   }
 
   public loginId : any;
+
   public friendId : any;
+
   public isFriend : any;
+
+  public friendStatus : any;
+
+  public isOnline : any;
+
   public conversations : any;
+
   public getMessage: Subscription;
+
+
 
   closeConfirm() :void {
 
@@ -69,6 +79,7 @@ export class UserDetailComponent implements OnInit,OnDestroy {
       this.httpService.friendRequest(post).toPromise().then(
         res => {
           this.isFriend = res.status;
+
           console.log("Response:", res);
 
         }
@@ -104,8 +115,11 @@ export class UserDetailComponent implements OnInit,OnDestroy {
     let messagePost = {
 
       "toSocketId" : this.data.friendId,
+
       "fromSocketId":this.cookieFeatureService.get("user"),
+
       "fromName" : this.data.name,
+
       "message" : getMsg.chatMessage
 
     };
@@ -119,6 +133,10 @@ export class UserDetailComponent implements OnInit,OnDestroy {
   ngOnInit() {
 
     console.log("Data from parent", this.data);
+
+    this.friendStatus = this.data.isFriend;
+
+    this.isOnline = this.data.isOnline;
 
     this.socketProviderService.newDataSource.subscribe(message => {
 
@@ -135,6 +153,10 @@ export class UserDetailComponent implements OnInit,OnDestroy {
           if (getId == getMessages[i].userId) {
 
             this.conversations = getMessages[i].detail;
+
+            this.friendStatus = getMessages[i].isFriend;
+
+            this.isOnline = getMessages[i].isOnline;
 
             console.log("Conversations", this.conversations);
 

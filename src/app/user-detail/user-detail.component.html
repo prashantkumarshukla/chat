@@ -16,7 +16,7 @@
 
     <md-card-title>{{data.name}}</md-card-title>
 
-    <md-card-subtitle *ngIf="data.isOnline; then onlineBlock else offLineBlock"></md-card-subtitle>
+    <md-card-subtitle *ngIf="isOnline; then onlineBlock else offLineBlock"></md-card-subtitle>
 
     <ng-template #onlineBlock>
      <span class="user-indicator online"></span><span class="indicator-text">Online</span>
@@ -30,7 +30,7 @@
 
   <md-card-content>
 
-    <div *ngIf="data.isFriend; then friendBlock else addFriendBlock"></div>
+    <div *ngIf="friendStatus; then friendBlock else addFriendBlock"></div>
 
     <ng-template #friendBlock></ng-template>
 

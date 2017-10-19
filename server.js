@@ -148,7 +148,26 @@ io.sockets.on('connection', function(socket) {
 
       if(toSocketId in users){
 
-        var recieveData = {"userId" : fromSocketId,"message" : data.message, "userInfo": userDetail[toSocketId], "requestType" : "recieved"};
+
+        var friendStatus = checkFriend(toSocketId,fromSocketId);
+
+        var onlineStatus = isOnlineUser(fromSocketId);
+
+        var recieveData = {
+
+          "userId" : fromSocketId,
+
+          "message" : data.message,
+
+          "userInfo": userDetail[fromSocketId],
+
+          "isFriend" : friendStatus,
+
+          "isOnline" : onlineStatus,
+
+          "requestType" : "recieved"
+
+        };
 
         delete recieveData.userInfo.userId;
 
@@ -160,7 +179,21 @@ io.sockets.on('connection', function(socket) {
 
         console.log("==================================================================================================");
 
-        var sendData = {"userId" : toSocketId,"message" : data.message, "userInfo": userDetail[toSocketId], "requestType" : "sent"};
+        var sendData = {
+
+          "userId" : toSocketId,
+
+          "message" : data.message,
+
+          "userInfo": userDetail[toSocketId],
+
+          "isFriend" : friendStatus,
+
+          "isOnline" : onlineStatus,
+
+          "requestType" : "sent"
+
+        };
 
         delete sendData.userInfo.userId;
 
@@ -174,6 +207,46 @@ io.sockets.on('connection', function(socket) {
 
       }
 
+      function checkFriend(friendId, userId) {
+
+        var friendStatus = false;
+
+        if(userId in friendList){
+
+          var getFriendList = friendList[userId].friends;
+
+          for(var i=0; i<getFriendList.length; i++){
+
+            if(friendId == getFriendList[i].friendId){
+
+              friendStatus = true;
+
+              break;
+
+            }
+
+          }
+
+        }
+
+        return friendStatus;
+
+      }
+
+      function isOnlineUser(userId) {
+
+        var online = false;
+
+        if(userId in users){
+
+          online = true;
+
+        }
+
+        return online;
+
+      }
+
   });
 
   socket.on("friend-list", function (id) {
@@ -184,39 +257,39 @@ io.sockets.on('connection', function(socket) {
 
     var readJson = JSON.parse(readFile);
 
-    var friendList = readJson.firendList;
+    var friendLists = readJson.firendList;
 
     var buildList = [];
 
-    for (var i = 0; i < friendList.length; i++) {
+    for (var i = 0; i < friendLists.length; i++) {
 
-      if (friendList[i].status == true) {
+      if (friendLists[i].status == true) {
 
-          var friendId = friendList[i].friendId;
+          var friendId = friendLists[i].friendId;
 
-          friendList[i] = getProfileDetail(friendId);
+          friendLists[i] = getProfileDetail(friendId);
 
-          friendList[i].friendId = friendId;
+          friendLists[i].friendId = friendId;
 
-          friendList[i].isFriend = true;
+          friendLists[i].isFriend = true;
 
-          friendList[i].isOnline = checkUserOnline(friendId);
+          friendLists[i].isOnline = checkUserOnline(friendId);
 
-          delete friendList[i]['friendListFile'];
+            delete friendLists[i]['friendListFile'];
 
-          delete friendList[i]['messageBook'];
+            delete friendLists[i]['messageBook'];
 
-          delete friendList[i]['status'];
+            delete friendLists[i]['status'];
 
-          delete friendList[i]['birthday'];
+            delete friendLists[i]['birthday'];
 
-          delete friendList[i]['email'];
+            delete friendLists[i]['email'];
 
-          delete friendList[i]['fName'];
+            delete friendLists[i]['fName'];
 
-          delete friendList[i]['lName'];
+            delete friendLists[i]['lName'];
 
-          buildList.push(friendList[i]);
+            buildList.push(friendLists[i]);
 
 
       }

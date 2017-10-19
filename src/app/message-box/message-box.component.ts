@@ -78,10 +78,19 @@ export class MessageBoxComponent implements OnInit {
       let getUserId = this.getServerResponse.userId;
 
       let buildChat = {
+
         "userDetail": this.getServerResponse.userInfo,
+
+        "isFriend" : this.getServerResponse.isFriend,
+
+        "isOnline" : this.getServerResponse.isOnline,
+
         "conversations": {
+
           "message": this.getServerResponse.message,
+
           "requestType": this.getServerResponse.requestType
+
         }
       };
 
@@ -92,9 +101,14 @@ export class MessageBoxComponent implements OnInit {
 
           "userId": getUserId,
 
+          "isFriend" : this.getServerResponse.isFriend,
+
+          "isOnline" : this.getServerResponse.isOnline,
+
           "detail": [buildChat.conversations],
 
           "userInfo": buildChat.userDetail
+
         }];
 
       } else {
@@ -118,14 +132,22 @@ export class MessageBoxComponent implements OnInit {
 
         if (!getStatus) {
 
-          this.chatDetail = [{
+          let buildData = {};
+
+          buildData = {
 
             "userId": getUserId,
+
+            "isFriend" : this.getServerResponse.isFriend,
+
+            "isOnline" : this.getServerResponse.isOnline,
 
             "detail": [buildChat.conversations],
 
             "userInfo": buildChat.userDetail
-          }];
+          };
+
+          this.chatDetail.push(buildData);
 
         }
 

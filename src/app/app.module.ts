@@ -23,6 +23,7 @@ import { ChatPaneComponent } from './chat-pane/chat-pane.component';
 import { FriendListCounterComponent } from './friend-list-counter/friend-list-counter.component';
 import { FriendRequestListComponent } from './friend-request-list/friend-request-list.component';
 import { SocketProviderService } from "./services/socket-provider.service";
+import { MessageListComponent } from './message-list/message-list.component';
 
 const appRoutes:Routes = [
   {
@@ -55,7 +56,8 @@ const appRoutes:Routes = [
     UserDetailComponent,
     ChatPaneComponent,
     FriendListCounterComponent,
-    FriendRequestListComponent
+    FriendRequestListComponent,
+    MessageListComponent
   ],
   imports: [
     RouterModule.forRoot(
