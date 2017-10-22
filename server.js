@@ -3,16 +3,6 @@ var fs = require('fs');
 
 var express = require('express');
 
-/*var cookieParser = require('cookie-parser');*/
-
-var session = require('express-session');
-
-var MemoryStore = session.MemoryStore;
-
-var sessionStore = new MemoryStore();
-
-console.log("Memory", sessionStore);
-
 var path = require('path');
 
 var http = require('http');
@@ -24,25 +14,6 @@ var app = express();
 var server = http.createServer(app);
 
 var io = require('socket.io').listen(server);
-
-var session = require("express-session")({
-
-  secret: "my-secret",
-
-  resave: true,
-
-  saveUninitialized: true
-
-});
-
-var sharedsession = require("express-socket.io-session");
-
-app.use(session);
-
-io.use(sharedsession(session));
-
-var userSessions = [];
-connections = [];
 
 var users = {};
 
@@ -351,7 +322,7 @@ io.sockets.on('connection', function(socket) {
 
       sendData = {
 
-        "typingMsg" : userName + "is typing",
+        "typingMsg" : userName + " is typing...",
 
         "friendId" : fromSocketId
 
@@ -361,7 +332,7 @@ io.sockets.on('connection', function(socket) {
 
       sendData = {
 
-        "typingMsg" : "",
+        "typingMsg" : "false",
 
         "friendId" : fromSocketId
 
@@ -554,59 +525,6 @@ function messageBookCreation(id) {
 
   return fileToCreate;
 
-}
-
-app.post('/login', userlogin);
-
-function userlogin(req, res, next) {
-
-  var getFile = fs.readFileSync('server/users.json');
-  var readJson = JSON.parse(getFile);
-
-  var existData = readJson.users;
-  var userData = req.body;
-  var userStatus = checkUserExist(userData, existData, "login");
-  var getDate = new Date();
-  var times = getDate.getTime();
-  var userSession = userStatus.id + times;
-  var msg = {"status": userStatus,"userSession" : userSession};
-
-  if (userStatus.valid == true) {
-    var readFile = fs.readFileSync('server/online-users.json');
-    var listOfOnlineUsers = JSON.parse(readFile);
-    var onlineUsers = listOfOnlineUsers.users;
-    var data = {};
-    var uploadData = [];
-
-    console.log("User Seesion:", userSession);
-
-    userSessions.push(userSession);
-    var userId = {
-      "id": userStatus.id,
-      "dateTime": new Date()
-    };
-
-    if (Array.isArray(onlineUsers)) {
-
-      onlineUsers.push(userId);
-      uploadData = onlineUsers;
-    }
-
-    data.users = uploadData;
-
-
-    var datatoWrite = JSON.stringify(data, null, 2);
-    fs.writeFile('server/online-users.json', datatoWrite, finished);
-
-    function finished(err) {
-
-      console.log("user online");
-      res.send(msg);
-    }
-  } else {
-
-    res.send(msg);
-  }
 }
 
 app.post('/search', searchUsers);
