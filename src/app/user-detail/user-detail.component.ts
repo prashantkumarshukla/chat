@@ -62,7 +62,7 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
   public getMessage: Subscription;
 
-
+  public typeResponse : any;
 
   closeConfirm() :void {
 
@@ -130,6 +130,18 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
   }
 
+  userTyping(typingStatus) : void {
+
+    let userId = this.cookieFeatureService.get("user");
+
+    let friendId = this.data.friendId;
+
+    let sendData = { "userId" : userId, "friendId" : friendId, "typing" : typingStatus };
+
+    this.socketProviderService.typingStatus(sendData);
+
+  }
+
   ngOnInit() {
 
     console.log("Data from parent", this.data);
@@ -140,7 +152,6 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
     this.socketProviderService.newDataSource.subscribe(message => {
 
-      //this.data = message;
 
       let getMessages = message.conversations;
 
@@ -166,12 +177,21 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
         }
 
-        //this.conversations = message;
-
         console.log("Message:", message);
+
       }
 
-    })
+    });
+
+    this.socketProviderService.typingDataSource.subscribe(typing => {
+
+      if(typing.friendId == this.data.friendId) {
+
+        this.typeResponse = typing.typingMsg;
+
+      }
+
+    });
 
   }
 

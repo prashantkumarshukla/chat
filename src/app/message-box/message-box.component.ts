@@ -75,85 +75,97 @@ export class MessageBoxComponent implements OnInit {
 
       this.getServerResponse = chats;
 
+      console.log("Response", this.getServerResponse);
+
       let getUserId = this.getServerResponse.userId;
 
-      let buildChat = {
+      if(getUserId) {
 
-        "userDetail": this.getServerResponse.userInfo,
+        let buildChat = {
 
-        "isFriend" : this.getServerResponse.isFriend,
+          "userDetail": this.getServerResponse.userInfo,
 
-        "isOnline" : this.getServerResponse.isOnline,
+          "isFriend": this.getServerResponse.isFriend,
 
-        "conversations": {
+          "isOnline": this.getServerResponse.isOnline,
 
-          "message": this.getServerResponse.message,
+          "conversations": {
 
-          "requestType": this.getServerResponse.requestType
+            "message": this.getServerResponse.message,
+
+            "requestType": this.getServerResponse.requestType
+
+          }
+        };
+
+
+        if (!this.chatDetail) {
+
+          this.chatDetail = [{
+
+            "userId": getUserId,
+
+            "isFriend": this.getServerResponse.isFriend,
+
+            "isOnline": this.getServerResponse.isOnline,
+
+            "detail": [buildChat.conversations],
+
+            "userInfo": buildChat.userDetail
+
+          }];
 
         }
-      };
+        else {
+
+          let getStatus = false;
 
 
-      if (!this.chatDetail) {
+          for (var i = 0; i < this.chatDetail.length; i++) {
 
-        this.chatDetail = [{
+            if (getUserId == this.chatDetail[i].userId) {
 
-          "userId": getUserId,
+              this.chatDetail[i].detail.push(buildChat.conversations);
 
-          "isFriend" : this.getServerResponse.isFriend,
+              getStatus = true;
 
-          "isOnline" : this.getServerResponse.isOnline,
+              break;
 
-          "detail": [buildChat.conversations],
+            }
 
-          "userInfo": buildChat.userDetail
+          }
 
-        }];
+          if (!getStatus) {
 
-      } else {
+            let buildData = {};
 
-        let getStatus = false;
+            buildData = {
 
+              "userId": getUserId,
 
-        for (var i = 0; i < this.chatDetail.length; i++) {
+              "isFriend": this.getServerResponse.isFriend,
 
-          if (getUserId == this.chatDetail[i].userId) {
+              "isOnline": this.getServerResponse.isOnline,
 
-            this.chatDetail[i].detail.push(buildChat.conversations);
+              "detail": [buildChat.conversations],
 
-            getStatus = true;
+              "userInfo": buildChat.userDetail
+            };
 
-            break;
+            this.chatDetail.push(buildData);
 
           }
 
         }
 
-        if (!getStatus) {
-
-          let buildData = {};
-
-          buildData = {
-
-            "userId": getUserId,
-
-            "isFriend" : this.getServerResponse.isFriend,
-
-            "isOnline" : this.getServerResponse.isOnline,
-
-            "detail": [buildChat.conversations],
-
-            "userInfo": buildChat.userDetail
-          };
-
-          this.chatDetail.push(buildData);
-
-        }
-
+        this.socketProviderService.updateData({"conversations": this.chatDetail});
       }
 
-      this.socketProviderService.updateData({"conversations": this.chatDetail});
+      if(this.getServerResponse.typingMsg){
+
+        this.socketProviderService.updateTypingStatus(this.getServerResponse);
+
+      }
 
     });
 

@@ -3,7 +3,7 @@ var fs = require('fs');
 
 var express = require('express');
 
-var cookieParser = require('cookie-parser');
+/*var cookieParser = require('cookie-parser');*/
 
 var session = require('express-session');
 
@@ -334,6 +334,43 @@ io.sockets.on('connection', function(socket) {
     }
 
   }
+
+  socket.on("typing", function (data) {
+
+    var fromSocketId = data.userId;
+
+    var toSocketId = data.friendId;
+
+    var userName = userDetail[fromSocketId].userName;
+
+    var typingStatus = data.typingStatus;
+
+    var sendData = {};
+
+    if(typingStatus != "none"){
+
+      sendData = {
+
+        "typingMsg" : userName + "is typing",
+
+        "friendId" : fromSocketId
+
+      };
+
+    } else {
+
+      sendData = {
+
+        "typingMsg" : "",
+
+        "friendId" : fromSocketId
+
+      };
+    }
+
+    users[toSocketId].emit("user-is-typing", sendData);
+
+  });
 
 });
 
