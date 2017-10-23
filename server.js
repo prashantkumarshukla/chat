@@ -7,7 +7,7 @@ var path = require('path');
 
 var http = require('http');
 
-var port = process.env.Port || 5000;
+//var port = process.env.Port || 5000;
 
 var app = express();
 
@@ -29,10 +29,15 @@ app.get('*', function(req, res) {
 
 });
 
-server.listen(port,function() {
+/*server.listen(port,function() {
   console.log('server running...');
-});
+});*/
 
+app.set('port', (process.env.PORT || 5000));
+
+server.listen(app.get('port'), function() {
+  console.log('App is running, server is listening on port ', app.get('port'));
+});
 
 io.sockets.on('connection', function(socket) {
 
