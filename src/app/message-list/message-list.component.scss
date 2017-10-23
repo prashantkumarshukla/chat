@@ -1,0 +1,22 @@
+$grey : #CCCCCC;
+
+p.latestMsg {
+
+  display: block;
+  font-size: 0.75rem;
+  color: $grey;
+  margin-left: 32px;
+
+}
+
+.youTag {
+
+  &:before {
+
+    content: "me: ";
+    font-size: 0.75rem;
+    font-style: italic;
+    color: $grey;
+  }
+
+}
