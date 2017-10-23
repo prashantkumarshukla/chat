@@ -59,6 +59,16 @@
       "birthday": "1/1/1999",
       "id": "1506709706293",
       "type": "normal"
+    },
+    {
+      "fName": "Meetu",
+      "lName": "Sharma",
+      "email": "meetusharma@gmail.com",
+      "userPwd": "meetusharma",
+      "gender": "Female",
+      "birthday": "12/26/1978",
+      "id": "1508734122909",
+      "type": "normal"
     }
   ]
 }
