@@ -377,6 +377,8 @@ app.post('/register', registerUser);
 
 function registerUser(req, res, next) {
 
+  console.log("Registration detail", req);
+
   var getFile = fs.readFileSync('server/users.json');
   var readJson = JSON.parse(getFile);
 
@@ -397,6 +399,8 @@ function registerUser(req, res, next) {
 
     if (existUser == false) {
 
+      console.log("user Not exist, registration can proceed");
+
       profileCreation(newData);
 
       existData.push(newData);
@@ -406,6 +410,8 @@ function registerUser(req, res, next) {
       data.users = dataToLoad;
 
       var datatoWrite = JSON.stringify(data, null, 2);
+
+      console.log("File is about to create", datatoWrite);
 
       fs.writeFile('server/users.json', datatoWrite, finished);
 
@@ -489,6 +495,8 @@ function profileCreation(newData) {
   profileDetail.messageBook = messageBookName;
 
   var writeInFile = JSON.stringify(profileDetail, null, 2);
+
+  console.log("Profile creation started", profileDetail);
 
   fs.writeFileSync('server/user-profile-detail/' + fileName, writeInFile, finished);
 
