@@ -1725,7 +1725,7 @@ var UserDetailComponent = (function () {
     };
     UserDetailComponent.prototype.sendFriendRequest = function (friendId) {
         var _this = this;
-        var post = { "friendId": friendId, "userId": this.loginId };
+        var post = { "friendId": friendId, "userId": this.cookieFeatureService.get("user") };
         var sendRequest = new Promise(function (resolve, reject) {
             _this.httpService.friendRequest(post).toPromise().then(function (res) {
                 _this.isFriend = res.status;
@@ -1735,7 +1735,7 @@ var UserDetailComponent = (function () {
     };
     UserDetailComponent.prototype.confirmRequest = function (friendId, action) {
         var _this = this;
-        var post = { "friendId": friendId, "userId": this.loginId, "action": action };
+        var post = { "friendId": friendId, "userId": this.cookieFeatureService.get("user"), "action": action };
         var sendRequest = new Promise(function (resolve, reject) {
             _this.httpService.requestAction(post).toPromise().then(function (res) {
                 _this.isFriend = res.status;

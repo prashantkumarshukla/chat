@@ -1,3 +1,9 @@
 {
-  "firendList": []
+  "firendList": [
+    {
+      "friendId": "1505403184533",
+      "status": true,
+      "reqType": "sent"
+    }
+  ]
 }

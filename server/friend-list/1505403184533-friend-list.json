@@ -14,6 +14,11 @@
       "friendId": "1506709706293",
       "status": true,
       "reqType": "sent"
+    },
+    {
+      "friendId": "1508734122909",
+      "status": true,
+      "reqType": "received"
     }
   ]
 }

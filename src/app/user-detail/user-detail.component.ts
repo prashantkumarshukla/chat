@@ -72,7 +72,7 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
   sendFriendRequest(friendId) : void {
 
-    let post = {"friendId" : friendId,"userId":this.loginId};
+    let post = {"friendId" : friendId,"userId":this.cookieFeatureService.get("user")};
 
     let sendRequest = new Promise((resolve, reject) => {
 
@@ -90,7 +90,7 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
   confirmRequest(friendId,action) : void {
 
-    let post = {"friendId" : friendId,"userId":this.loginId,"action" : action};
+    let post = {"friendId" : friendId,"userId":this.cookieFeatureService.get("user"),"action" : action};
 
     let sendRequest = new Promise((resolve, reject) => {
 
