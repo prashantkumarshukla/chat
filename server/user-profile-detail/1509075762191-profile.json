@@ -1,0 +1,10 @@
+{
+  "fName": "Nikita",
+  "lName": "Shah",
+  "name": "Nikita Shah",
+  "email": "nikitiashah@gmail.com",
+  "gender": "Female",
+  "birthday": "11/26/1997",
+  "friendListFile": "1509075762191-friend-list.json",
+  "messageBook": "1509075762191-message-book.json"
+}

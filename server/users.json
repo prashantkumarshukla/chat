@@ -69,6 +69,16 @@
       "birthday": "12/26/1978",
       "id": "1508734122909",
       "type": "normal"
+    },
+    {
+      "fName": "Nikita",
+      "lName": "Shah",
+      "email": "nikitiashah@gmail.com",
+      "userPwd": "nikitashah",
+      "gender": "Female",
+      "birthday": "11/26/1997",
+      "id": "1509075762191",
+      "type": "normal"
     }
   ]
 }
