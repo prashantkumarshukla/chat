@@ -140,7 +140,7 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
 
   uerLogin(data) : void {
 
-    this.socketProviderService.userLogin(data);
+      this.socketProviderService.userLogin(data);
 
 
    /* let submitData = new Promise((resolve, reject) => {

@@ -389,13 +389,14 @@ function registerUser(req, res, next) {
   var data = {};
 
   var existUser = "";
+
   var msg = {};
+
+  console.log("Exist data", existData);
 
   if (Array.isArray(existData)) {
 
     existUser = checkUserExist(newData.email, existData, "registration");
-
-    var fileToCreate = "";
 
     if (existUser == false) {
 
@@ -404,7 +405,9 @@ function registerUser(req, res, next) {
       profileCreation(newData);
 
       existData.push(newData);
+
       dataToLoad = existData;
+
       console.log("User Not exist");
 
       data.users = dataToLoad;
@@ -500,9 +503,9 @@ function profileCreation(newData) {
 
   fs.writeFileSync('server/user-profile-detail/' + fileName, writeInFile, finished);
 
-  function finished() {
+  function finished(status) {
 
-    console.log("Friend list file created");
+    console.log("Status is", status);
 
   }
 
