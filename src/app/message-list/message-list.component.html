@@ -1,6 +1,7 @@
-<md-card *ngFor="let item of getUserList">
+<app-header></app-header>
+<mat-card *ngFor="let item of getUserList">
 
-  <md-card-content class="user-list" (click)="userDetailOpenDialog(item)">
+  <mat-card-content class="user-list" (click)="userDetailOpenDialog(item)">
 
     <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
 
@@ -26,6 +27,6 @@
 
     </ng-template>
 
-  </md-card-content>
+  </mat-card-content>
 
-</md-card>
+</mat-card>

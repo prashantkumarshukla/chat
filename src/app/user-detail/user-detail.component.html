@@ -1,133 +1,90 @@
-<md-dialog-actions>
+<app-header></app-header>
+<mat-card>
+  <mat-card-content>
+    <mat-card-header>
+      <div mat-card-avatar
+           class="header-image">
+      </div>
+      <mat-card-title>
+        {{data.name}}
+      </mat-card-title>
+      <mat-card-subtitle *ngIf="isOnline; then onlineBlock else offLineBlock">
+      </mat-card-subtitle>
+      <ng-template #onlineBlock>
+        <span class="user-indicator online"></span>
+        <span class="indicator-text">
+          Online
+        </span>
+      </ng-template>
+      <ng-template #offLineBlock>
+        <span class="user-indicator offline"></span>
+        <span class="indicator-text">
+          Offline
+        </span>
+      </ng-template>
+    </mat-card-header>
+    <mat-card-content>
+      <div *ngIf="friendStatus; then friendBlock else addFriendBlock"></div>
+      <ng-template #friendBlock></ng-template>
+      <ng-template #addFriendBlock>
+        <p *ngIf="data.gender === 'female' || data.gender === 'Female'">
+          She is not in your friend list. Send her request.
+        </p>
+        <p *ngIf="data.gender === 'male' || data.gender === 'Male'">
+          He is not in your friend list. Send him request.
+        </p>
+      </ng-template>
 
-  <button md-raised-button (click)="closeConfirm()" class="back-btn">Back</button>
-
-</md-dialog-actions>
-
-<p md-dialog-title class="text-center font-v-small align-v-top">{{data.name}}</p>
-
-<md-dialog-content>
-  <hr />
-  <md-card class="no-shadow card-fixed-sized">
-
-  <md-card-header>
-
-    <div md-card-avatar class="header-image"></div>
-
-    <md-card-title>{{data.name}}</md-card-title>
-
-    <md-card-subtitle *ngIf="isOnline; then onlineBlock else offLineBlock"></md-card-subtitle>
-
-    <ng-template #onlineBlock>
-     <span class="user-indicator online"></span><span class="indicator-text">Online</span>
-    </ng-template>
-
-    <ng-template #offLineBlock>
-      <span class="user-indicator offline"></span><span class="indicator-text">Offline</span>
-    </ng-template>
-
-  </md-card-header>
-
-  <md-card-content>
-
-    <div *ngIf="friendStatus; then friendBlock else addFriendBlock"></div>
-
-    <ng-template #friendBlock></ng-template>
-
-    <ng-template #addFriendBlock>
-
-      <p>Add them so they can message you, and so you can send and receive messages.</p>
-
-      <button
-        md-raised-button
-        type="button"
-        (click)="sendFriendRequest(data.friendId)"
-        [hidden]="isFriend == 'confirm' || isFriend == 'pending'">
-        ADD ON MESSENGER
-      </button>
-
-    </ng-template>
-
-    <div *ngIf="data.isFriend == 'pending'">
-
-      <p>{{data.name}} has sent you the Friend Request.</p>
-
-      <button
-        md-raised-button
-        (click)="confirmRequest(data.friendId,'accept')"
-        type="button">
-        CONFIRM
-      </button>
-
-      <button
-        md-raised-button
-        (click)="confirmRequest(data.friendId,'delete')"
-        type="button">
-        Deny
-      </button>
-
-    </div>
-
-    <hr />
-
-    <div class="chat-pane">
-
-      <div class="message-section" *ngIf="conversations !== undefined">
-
-        <div *ngFor="let item of conversations">
-
-          <div class="sent" *ngIf="item.requestType=='sent'">
-
-            <p>{{item.message}}</p>
-
+      <app-request-action [actionObj]="btnActionData"></app-request-action>
+      <hr />
+      <div class="chat-pane">
+        <div class="message-section"
+             *ngIf="conversations !== undefined">
+          <div *ngFor="let item of conversations">
+            <div class="sent"
+                 *ngIf="item.requestType=='sent'">
+              <p>{{item.message}}</p>
+            </div>
+            <div class="received"
+                 *ngIf="item.requestType=='recieved'">
+              <p>{{item.message}}</p>
+            </div>
           </div>
-
-          <div class="received" *ngIf="item.requestType=='recieved'">
-
-            <p>{{item.message}}</p>
-
-          </div>
-
         </div>
-
       </div>
-
-    </div>
-
-    <div class="send-message-pane">
-
-      <p class="typingStatus" *ngIf="typeResponse">{{typeResponse}}</p>
-
-      <form [formGroup]="messageForm" (ngSubmit)="sendMessage(messageForm.value)">
-
-        <input class="form-control type-pane" type="text" formControlName="chatMessage" (keyup)="userTyping('none')" (keydown)="userTyping('typing')"/>
-
-        <button md-raised-button type="submit" class="send-message"><i class="material-icons">send</i></button>
-
-      </form>
-
-      <div class="emoji">
-
-        <button>
-
-          <i class="fa fa-smile-o" aria-hidden="true"></i>
-
-        </button>
-
-        <button>
-
-          <i class="fa fa-picture-o" aria-hidden="true"></i>
-
-        </button>
-
+      <div class="send-message-pane">
+        <p class="typingStatus"
+           *ngIf="typeResponse">
+          {{typeResponse}}
+        </p>
+        <form [formGroup]="messageForm"
+              (ngSubmit)="sendMessage(messageForm.value)">
+          <input class="form-control type-pane"
+                 type="text"
+                 formControlName="chatMessage"
+                 (keyup)="userTyping('none')"
+                 (keydown)="userTyping('typing')"/>
+          <button mat-raised-button
+                  type="submit"
+                  class="send-message">
+            <i class="material-icons">
+              send
+            </i>
+          </button>
+        </form>
+        <div class="emoji">
+          <button>
+            <i class="fa fa-smile-o"
+               aria-hidden="true">
+            </i>
+          </button>
+          <button>
+            <i class="fa fa-picture-o"
+               aria-hidden="true">
+            </i>
+          </button>
+        </div>
       </div>
-
-    </div>
-
-  </md-card-content>
-
-
-
-</md-card>
-
-</md-dialog-content>
+    </mat-card-content>
+  </mat-card-content>
+</mat-card>

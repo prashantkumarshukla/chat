@@ -1,25 +1,26 @@
 //console.log("server is starting");
 var fs = require('fs');
-
 var express = require('express');
+var mongoClient = require('mongodb');
+var mongoUrl = 'mongodb://localhost:27017/';
+var dbName = 'chatdb';
+var dbCollectionName = {
+  'userProfile' : 'userProfile',
+  'friendList' : 'friendList'
+};
 
 var path = require('path');
-
 var http = require('http');
 
 //var port = process.env.Port || 5000;
-
 var app = express();
-
 var server = http.createServer(app);
-
 var io = require('socket.io').listen(server);
-
 var users = {};
-
 var userDetail = {};
-
 var friendList = {};
+var searchUserConfig = require('./server/search-user.js');
+var loginVerify = require('./server/login-validation.js');
 
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -40,253 +41,335 @@ server.listen(app.get('port'), function() {
 });
 
 io.sockets.on('connection', function(socket) {
-
-  socket.on("login", function(userdata) {
-
-    var getFile = fs.readFileSync('server/users.json');
-
-    var readJson = JSON.parse(getFile);
-
-    var existData = readJson.users;
-
+  socket.on("login", function (userdata) {
     var userStatus = false;
-
+    var filterData = {email: 1};
     var data = {};
-
     var getUserId = "";
-
-    for(var i=0; i < existData.length; i++){
-
-      if(existData[i].email == userdata.userName && existData[i].userPwd == userdata.userPassword){
-
-        userStatus = true;
-
-        getUserId = existData[i].id;
-
-        socket.userId = existData[i].id;
-
+    findQueryInDB(dbCollectionName.userProfile, filterData, function (result) {
+      var loginData = loginVerify.loginVerify(result, socket, userdata);
+      if (loginData) {
+        socket.userId = loginData.userId;
         users[socket.userId] = socket;
+        users[socket.userId].emit("login done", loginData);
+        console.log("===========User logged in successfully=============");
+        console.log(loginData);
+        console.log("===================================================");
+      } else {
+        console.log("===========Login Failed=============");
+        data = {"status": false};
+        users[getUserId].emit('login done', data);
+        console.log("===================================================");
+      }
+    });
+  });
 
-        data = {
-          "userEmail" : userdata.userName,
-          "userId" : existData[i].id,
-          "success" : true,
-          "userName" : existData[i].fName + " " + existData[i].lName
-        };
+  socket.on("search-user", function (searchData) {
+    var filterData = {_id: 0};
+    console.log("Search Data:", searchData);
+    findQueryInDB(dbCollectionName.userProfile, filterData, function (response) {
+      console.log("DB Data:", response);
+      users[searchData.id].emit('search-user-list', searchUserConfig.searchUser(response,searchData, users));
+    });
+  });
 
-        userDetail[getUserId] = data;
+  socket.on("sent-request", function (reqData) {
+    insertInDB(dbCollectionName.friendList, reqData, function (response) {
+      var successResponse = {
+        "responseType" : "friendRequest",
+        "friendId": reqData.friendId,
+        "status": true,
+        "code": 200,
+        "isFriend": "pending",
+        "request": "sent"
+      };
+      var failiureResponse = {"status": false, "code": 500};
+      response ? users[reqData.id].emit('friend-request-status', successResponse) :
+        users[reqData.id].emit('friend-request-status', failiureResponse);
+      console.log('Friend request status:', successResponse);
+    });
+  });
+});
+  var bodyParser = require('body-parser');
 
-        console.log("Users:", userDetail[getUserId]);
+  function listening() {
+    console.log("Server is running...");
+  }
 
-        break;
+
+  app.use(function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
+  });
+
+  app.use(bodyParser.urlencoded({extended: false}));
+  app.use(bodyParser.json());
+  app.post('/register', registerUser);
+
+  function findQueryInDB(collectionName, data, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName)
+          .find({}, data).toArray(function (err, result) {
+          if (err) {
+            console.log('Query not executed: ' + err);
+            callback(false);
+          } else {
+            console.log('Query executed: ' + result.length);
+            callback(result);
+            db.close();
+          }
+        });
+      }
+    });
+  }
+
+  function insertInDB(collectionName, data, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName)
+          .insertOne(data, function (err, res) {
+            if (err) {
+              console.log('Data insertion failed: ' + err);
+              callback(false);
+            } else {
+              console.log(res.insertedCount + ': Data inserted successfully ');
+              callback(true);
+              db.close();
+            }
+          });
+      }
+    });
+  }
+
+  function registerUser(req, res, next) {
+
+    var msg = {};
+
+    var filterData = {email: 1};
+
+    var data = req.body;
+
+    findQueryInDB(dbCollectionName.userProfile, filterData, function (result) {
+
+      var userExist = false;
+
+      for (var i = 0; i < result.length; i++) {
+
+        console.log('Email id is : ' + result[i].email);
+
+        if (result[i].email === data.email) {
+
+          userExist = true;
+
+          msg = {
+
+            'status': false,
+            'responseCode': 200,
+            'info': 'User Already Exist'
+          };
+
+          console.log(msg.info);
+
+          break;
+        }
       }
 
+      if (!userExist) {
+
+        insertInDB(dbCollectionName.userProfile, data, function (response) {
+
+          if (response) {
+
+            msg = {
+
+              'status': true,
+              'responseCode': 200,
+              'info': 'User successfully registered'
+            };
+          } else {
+
+            msg = {
+
+              'status': false,
+              'responseCode': 503,
+              'info': 'DB insertion failed'
+            };
+          }
+
+          console.log(msg.info);
+          res.send(msg);
+        });
+      }
+    });
+  }
+
+  function isFriendOnline(friendId) {
+
+    return (friendId in users) ? true : false;
+  }
+
+// To verify later
+  function friendListFileCreation(id) {
+
+    var fileToCreate = id + "-friend-list.json";
+
+    var textToWrite = {"firendList": []};
+
+    var writeInFile = JSON.stringify(textToWrite, null, 2);
+
+    fs.writeFileSync('server/friend-list/' + fileToCreate, writeInFile);
+
+    return fileToCreate;
+
+  }
+
+  function messageBookCreation(id) {
+
+    var fileToCreate = id + "-message-book.json";
+
+    var textToWrite = {"messageBook": []};
+
+    var writeInFile = JSON.stringify(textToWrite, null, 2);
+
+    fs.writeFile('server/user-message-book/' + fileToCreate, writeInFile, finished);
+
+    function finished() {
+      console.log("Friend list file created");
     }
 
-    if(userStatus){
+    return fileToCreate;
 
-      socket.emit("login done", data);
+  }
 
-      console.log("===========User logged in successfully=============");
+  app.post('/send-friend-request', sendFriendRequest);
 
-      console.log(data);
+  function sendFriendRequest(req, res, next) {
 
-      console.log("===================================================");
+    var msg = {};
+
+    var addFriend = "";
+
+    var selfUser = friendListCreation(req.body.userId, req.body.friendId, "sent");
+
+
+    if (selfUser == true) {
+
+      addFriend = friendListCreation(req.body.friendId, req.body.userId, "received");
+
+      if (addFriend == true) {
+
+        msg = {
+          "info": "Friend Request Sent",
+          "status": "pending"
+        }
+
+      } else {
+
+        msg = {
+          "info": "Friend Request Can't sent",
+          "status": "cancel"
+        }
+
+      }
 
     } else {
 
-      data = {"status" : false};
+      msg = {
+        "info": "Due to some technical issues, Your request can't be complete this time.",
+        "status": "cancel"
+      }
 
-      users[getUserId].emit('login done',data);
     }
 
-  });
+    res.send(msg);
 
-  socket.on("logout", function(userdata) {
+  }
 
-    delete clients[socket.id]; // remove the client from the array
-    delete users[hs.session.userId];
-  });
+  function friendListCreation(fromId, toId, reqType) {
 
-  socket.on('chating', function (data) {
+    var msg;
 
-      var toSocketId = data.toSocketId;
-
-      var fromSocketId = data.fromSocketId;
-
-      delete data.toSocketId;
-
-      data.timestamp = Math.floor(new Date() / 1000);
-
-      console.log("=======Chat message:", data.message);
-
-      console.log("========Friend ID:", toSocketId);
-
-      if(toSocketId in users){
-
-
-        var friendStatus = checkFriend(toSocketId,fromSocketId);
-
-        var onlineStatus = isOnlineUser(fromSocketId);
-
-        var recieveData = {
-
-          "userId" : fromSocketId,
-
-          "message" : data.message,
-
-          "userInfo": userDetail[fromSocketId],
-
-          "isFriend" : friendStatus,
-
-          "isOnline" : onlineStatus,
-
-          "requestType" : "recieved"
-
-        };
-
-        delete recieveData.userInfo.userId;
-
-        users[toSocketId].emit('new message',recieveData);
-
-        console.log("=================================Message to Friend================================================");
-
-        console.log(recieveData);
-
-        console.log("==================================================================================================");
-
-        var sendData = {
-
-          "userId" : toSocketId,
-
-          "message" : data.message,
-
-          "userInfo": userDetail[toSocketId],
-
-          "isFriend" : friendStatus,
-
-          "isOnline" : onlineStatus,
-
-          "requestType" : "sent"
-
-        };
-
-        delete sendData.userInfo.userId;
-
-        users[fromSocketId].emit('new message',sendData);
-
-        console.log("=================================Message back to User=============================================");
-
-        console.log(sendData);
-
-        console.log("==================================================================================================");
-
-      }
-
-      function checkFriend(friendId, userId) {
-
-        var friendStatus = false;
-
-        if(userId in friendList){
-
-          var getFriendList = friendList[userId].friends;
-
-          for(var i=0; i<getFriendList.length; i++){
-
-            if(friendId == getFriendList[i].friendId){
-
-              friendStatus = true;
-
-              break;
-
-            }
-
-          }
-
-        }
-
-        return friendStatus;
-
-      }
-
-      function isOnlineUser(userId) {
-
-        var online = false;
-
-        if(userId in users){
-
-          online = true;
-
-        }
-
-        return online;
-
-      }
-
-  });
-
-  socket.on("friend-list", function (id) {
-
-    var fileName = "server/friend-list/" + id + "-friend-list.json";
+    var fileName = "server/friend-list/" + fromId + "-friend-list.json";
 
     var readFile = fs.readFileSync(fileName);
 
     var readJson = JSON.parse(readFile);
 
-    var friendLists = readJson.firendList;
+    var friendList = readJson.firendList;
 
-    var buildList = [];
+    friendList.push({"friendId": toId, "status": "pending", "reqType": reqType});
 
-    for (var i = 0; i < friendLists.length; i++) {
+    var getData = {};
 
-      if (friendLists[i].status == true) {
+    getData.firendList = friendList;
 
-          var friendId = friendLists[i].friendId;
+    var dataToWrite = JSON.stringify(getData, null, 2);
 
-          friendLists[i] = getProfileDetail(friendId);
+    var fileWrite = fs.writeFileSync(fileName, dataToWrite);
 
-          friendLists[i].friendId = friendId;
+    msg = true;
 
-          friendLists[i].isFriend = true;
+    console.log("MSG", fileWrite);
 
-          friendLists[i].isOnline = checkUserOnline(friendId);
+    return msg;
 
-            delete friendLists[i]['friendListFile'];
+  }
 
-            delete friendLists[i]['messageBook'];
+  /*app.post('/friend-request', newFriendRequest);
 
-            delete friendLists[i]['status'];
+  function newFriendRequest(req, res, next) {
 
-            delete friendLists[i]['birthday'];
+    var id = req.body.userId;
 
-            delete friendLists[i]['email'];
+    var fileName = "server/friend-list/" + id + "-friend-list.json";
 
-            delete friendLists[i]['fName'];
+    console.log("file Name:", fileName);
 
-            delete friendLists[i]['lName'];
+    var readFile = fs.readFileSync(fileName);
 
-            buildList.push(friendLists[i]);
+    var readJson = JSON.parse(readFile);
 
+    var friendList = readJson.firendList;
+
+    var listArray = [];
+
+
+    for (var i = 0; i < friendList.length; i++) {
+
+      if (friendList[i].status == "pending" && friendList[i].reqType == "received") {
+
+        var getUserProfile = {};
+
+
+
+        getUserProfile.detail = profileInfo(friendList[i].friendId);
+        getUserProfile.detail.friendId = friendList[i].friendId;
+        getUserProfile.detail.isFriend = friendList[i].status;
+        getUserProfile.detail.isOnline = isFriendOnline(friendList[i].friendId);
+
+        listArray.push(getUserProfile);
 
       }
 
     }
 
-    friendList[id] = {"friends" : buildList};
+    var dataToSend = {"requestList" : listArray}
 
-    users[id].emit("friend-list-sent",friendList[id]);
+    res.send(dataToSend);
 
-    console.log("=================================Friend List==================================================");
+  }*/
 
-    console.log("Friend List for: ", id);
-
-    console.log(friendList[id]);
-
-    console.log("==============================================================================================");
-
-  });
-
-  function getProfileDetail(id) {
+  function profileInfo(id) {
 
     var fileName = "server/user-profile-detail/" + id + "-profile.json";
 
@@ -298,583 +381,160 @@ io.sockets.on('connection', function(socket) {
 
   }
 
-  function checkUserOnline(id) {
+  app.post('/confirm-friend-request', confirmFriendRequest);
 
-    if(id in users){
+  function confirmFriendRequest(req, res, next) {
 
-      return true;
+    var msg = {};
 
-    } else {
+    var confirm;
 
-      return false;
+    if (req.body.action == "accept") {
+
+      confirm = true;
+
     }
 
-  }
+    if (req.body.action == "delete") {
 
-  socket.on("typing", function (data) {
+      confirm = false;
 
-    var fromSocketId = data.userId;
-
-    var toSocketId = data.friendId;
-
-    var userName = userDetail[fromSocketId].userName;
-
-    var typingStatus = data.typingStatus;
-
-    var sendData = {};
-
-    if(typingStatus != "none"){
-
-      sendData = {
-
-        "typingMsg" : userName + " is typing...",
-
-        "friendId" : fromSocketId
-
-      };
-
-    } else {
-
-      sendData = {
-
-        "typingMsg" : "false",
-
-        "friendId" : fromSocketId
-
-      };
     }
 
-    users[toSocketId].emit("user-is-typing", sendData);
+    var selfUserConfirmation = confirmRequest(req.body.userId, req.body.friendId, confirm);
 
-  });
+    var toUserConfirmation;
 
-});
+    if (selfUserConfirmation == true) {
 
+      toUserConfirmation = confirmRequest(req.body.friendId, req.body.userId, confirm);
 
-const bodyParser = require('body-parser');
-
-function listening() {
-  console.log("Server is running...");
-}
-
-
-
-app.use(function (req, res, next) {
-
-  res.header("Access-Control-Allow-Origin", "*");
-
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-
-  next();
-
-});
-
-app.use(bodyParser.urlencoded({extended: false}));
-
-app.use(bodyParser.json());
-
-app.post('/register', registerUser);
-
-function registerUser(req, res, next) {
-
-  console.log("Registration detail", req);
-
-  var getFile = fs.readFileSync('server/users.json');
-  var readJson = JSON.parse(getFile);
-
-  var existData = readJson.users;
-  var newData = req.body;
-
-  var dataToLoad = [];
-  var data = {};
-
-  var existUser = "";
-
-  var msg = {};
-
-  console.log("Exist data", existData);
-
-  if (Array.isArray(existData)) {
-
-    existUser = checkUserExist(newData.email, existData, "registration");
-
-    if (existUser == false) {
-
-      console.log("user Not exist, registration can proceed");
-
-      profileCreation(newData);
-
-      existData.push(newData);
-
-      dataToLoad = existData;
-
-      console.log("User Not exist");
-
-      data.users = dataToLoad;
-
-      var datatoWrite = JSON.stringify(data, null, 2);
-
-      console.log("File is about to create", datatoWrite);
-
-      fs.writeFile('server/users.json', datatoWrite, finished);
-
-      function finished(err) {
-
-        console.log("Successfully user added");
+      if (toUserConfirmation == true) {
 
         msg = {
-          "status": "true",
-          "info": "Woow Great! You have successfully registered."
+
+          "info": "You accepted the request successfully",
+          "status": "true"
         };
 
-        res.send(msg);
+      } else {
+
+        msg = {
+
+          "info": "You declined the request successfully",
+          "status": "false"
+        };
+
       }
 
     } else {
 
       msg = {
-        "status": "false",
-        "info": "Your email id is already registered with us."
-      };
-
-      res.send(msg);
-    }
-
-  }
-
-}
-
-function checkUserExist(newData, oldData, formType) {
-
-  var status = false;
-
-  if (formType == "registration") {
-
-    for (var i = 0; i < oldData.length; i++) {
-
-      if (newData == oldData[i].email) {
-
-        status = true;
-        break;
-      }
-    }
-
-  } else {
-
-    if (formType == "login") {
-
-      for (var i = 0; i < oldData.length; i++) {
-
-        if (newData.userName == oldData[i].email && newData.userPassword == oldData[i].userPwd) {
-
-          var reply = {};
-          reply.valid = true;
-          reply.id = oldData[i].id;
-
-          status = reply;
-          break;
-        }
-      }
-    }
-  }
-  return status;
-}
-
-function profileCreation(newData) {
-
-  var friendListFileName = friendListFileCreation(newData.id);
-  var messageBookName = messageBookCreation(newData.id);
-
-  var fileName = newData.id + "-profile.json";
-
-  var profileDetail = {};
-  profileDetail.fName = newData.fName;
-  profileDetail.lName = newData.lName;
-  profileDetail.name = newData.fName + " " +newData.lName;
-  profileDetail.email = newData.email;
-  profileDetail.gender = newData.gender;
-  profileDetail.birthday = newData.birthday;
-  profileDetail.friendListFile = friendListFileName;
-  profileDetail.messageBook = messageBookName;
-
-  var writeInFile = JSON.stringify(profileDetail, null, 2);
-
-  console.log("Profile creation started", profileDetail);
-
-  fs.writeFileSync('server/user-profile-detail/' + fileName, writeInFile, finished);
-
-  function finished(status) {
-
-    console.log("Status is", status);
-
-  }
-
-}
-
-function friendListFileCreation(id) {
-
-  var fileToCreate = id + "-friend-list.json";
-
-  var textToWrite = {"firendList": []};
-
-  var writeInFile = JSON.stringify(textToWrite, null, 2);
-
-  fs.writeFileSync('server/friend-list/' + fileToCreate, writeInFile);
-
-  return fileToCreate;
-
-}
-
-function messageBookCreation(id) {
-
-  var fileToCreate = id + "-message-book.json";
-
-  var textToWrite = {"messageBook": []};
-
-  var writeInFile = JSON.stringify(textToWrite, null, 2);
-
-  fs.writeFile('server/user-message-book/' + fileToCreate, writeInFile, finished);
-
-  function finished() {
-    console.log("Friend list file created");
-  }
-
-  return fileToCreate;
-
-}
-
-app.post('/search', searchUsers);
-
-function searchUsers(req, res, next) {
-
-  var getFile = fs.readFileSync('server/users.json');
-  var readJson = JSON.parse(getFile);
-
-  var existUser = readJson.users;
-  var userData = req.body;
-  var searchString = userData.searchField;
-  var searchResult = [];
-  var reply = {}
-
-  for (var i = 0; i < existUser.length; i++) {
-
-    if (existUser[i].fName.toLowerCase() == searchString.toLowerCase() || existUser[i].lName.toLowerCase() == searchString.toLowerCase() || existUser[i].email.toLowerCase() == searchString.toLowerCase()) {
-      var dataToSend = {};
-      dataToSend.name = existUser[i].fName + " " + existUser[i].lName;
-      dataToSend.email = existUser[i].email;
-      dataToSend.friendId = existUser[i].id;
-      dataToSend.isFriend = false;
-      dataToSend.isOnline = isFriendOnline(existUser[i].id);
-      searchResult.push(dataToSend);
-    }
-  }
-
-  reply.results = searchResult;
-  console.log("Search Result: ", reply);
-  res.send(reply);
-}
-
-function isFriendOnline(friendId) {
-
-  var getFile = fs.readFileSync('server/online-users.json');
-  var readJson = JSON.parse(getFile);
-  var userList = readJson.users;
-  var isOnline = false;
-
-  for (var i = 0; i < userList.length; i++) {
-
-    if (friendId == userList[i].id) {
-
-      isOnline = true;
-      break;
-    }
-  }
-
-  return isOnline;
-}
-
-app.post('/send-friend-request', sendFriendRequest);
-
-function sendFriendRequest(req, res, next) {
-
-  var msg = {};
-
-  var addFriend = "";
-
-  var selfUser = friendListCreation(req.body.userId,req.body.friendId,"sent");
-
-
-  if (selfUser == true) {
-
-    addFriend = friendListCreation(req.body.friendId,req.body.userId,"received");
-
-    if (addFriend == true) {
-
-      msg = {
-        "info": "Friend Request Sent",
-        "status": "pending"
-      }
-
-    } else {
-
-      msg = {
-        "info": "Friend Request Can't sent",
+        "info": "Due to some technical issues, Your request can't be complete this time.",
         "status": "cancel"
       }
 
     }
 
-  } else {
-
-    msg = {
-      "info": "Due to some technical issues, Your request can't be complete this time.",
-      "status": "cancel"
-    }
+    res.send(msg);
 
   }
 
-  res.send(msg);
+  function confirmRequest(fromId, toId, confirm) {
 
-}
+    var fileName = "server/friend-list/" + fromId + "-friend-list.json";
 
-function friendListCreation(fromId,toId,reqType) {
+    var readFile = fs.readFileSync(fileName);
 
-  var msg;
+    var readJson = JSON.parse(readFile);
 
-  var fileName = "server/friend-list/" + fromId + "-friend-list.json";
+    var friendList = readJson.firendList;
 
-  var readFile = fs.readFileSync(fileName);
+    var buildArray = [];
 
-  var readJson = JSON.parse(readFile);
+    for (var i = 0; i < friendList.length; i++) {
 
-  var friendList = readJson.firendList;
+      if (toId == friendList[i].friendId && confirm) {
 
-  friendList.push({"friendId": toId, "status": "pending","reqType" : reqType});
+        friendList[i].status = confirm;
 
-  var getData = {};
+      } else {
 
-  getData.firendList = friendList;
+        if (toId == friendList[i].friendId && !confirm) {
 
-  var dataToWrite = JSON.stringify(getData, null, 2);
+          delete friendList[friendList[i]];
 
-  var fileWrite = fs.writeFileSync(fileName, dataToWrite);
-
-  msg = true;
-
-  console.log("MSG", fileWrite);
-
-  return msg;
-
-}
-
-app.post('/friend-request', newFriendRequest);
-
-function newFriendRequest(req, res, next) {
-
-  var id = req.body.userId;
-
-  var fileName = "server/friend-list/" + id + "-friend-list.json";
-
-  console.log("file Name:", fileName);
-
-  var readFile = fs.readFileSync(fileName);
-
-  var readJson = JSON.parse(readFile);
-
-  var friendList = readJson.firendList;
-
-  var listArray = [];
-
-
-  for (var i = 0; i < friendList.length; i++) {
-
-    if (friendList[i].status == "pending" && friendList[i].reqType == "received") {
-
-      var getUserProfile = {};
-
-
-
-      getUserProfile.detail = profileInfo(friendList[i].friendId);
-      getUserProfile.detail.friendId = friendList[i].friendId;
-      getUserProfile.detail.isFriend = friendList[i].status;
-      getUserProfile.detail.isOnline = isFriendOnline(friendList[i].friendId);
-
-      listArray.push(getUserProfile);
-
-    }
-
-  }
-
-  var dataToSend = {"requestList" : listArray}
-
-  res.send(dataToSend);
-
-}
-
-function profileInfo(id) {
-
-  var fileName = "server/user-profile-detail/" + id + "-profile.json";
-
-  var readFile = fs.readFileSync(fileName);
-
-  var readJson = JSON.parse(readFile);
-
-  return readJson;
-
-}
-
-app.post('/confirm-friend-request', confirmFriendRequest);
-
-function confirmFriendRequest(req, res, next) {
-
-  var msg = {};
-
-  var confirm;
-
-  if(req.body.action == "accept") {
-
-    confirm = true;
-
-  }
-
-  if(req.body.action == "delete") {
-
-    confirm = false;
-
-  }
-
-  var selfUserConfirmation = confirmRequest(req.body.userId, req.body.friendId, confirm);
-
-  var toUserConfirmation;
-
-  if (selfUserConfirmation == true) {
-
-    toUserConfirmation = confirmRequest(req.body.friendId, req.body.userId, confirm);
-
-    if(toUserConfirmation == true) {
-
-      msg = {
-
-        "info" : "You accepted the request successfully",
-        "status" : "true"
-      };
-
-    } else {
-
-      msg = {
-
-        "info" : "You declined the request successfully",
-        "status" : "false"
-      };
-
-    }
-
-  } else {
-
-    msg = {
-      "info": "Due to some technical issues, Your request can't be complete this time.",
-      "status": "cancel"
-    }
-
-  }
-
-  res.send(msg);
-
-}
-
-function confirmRequest(fromId, toId, confirm) {
-
-  var fileName = "server/friend-list/" + fromId + "-friend-list.json";
-
-  var readFile = fs.readFileSync(fileName);
-
-  var readJson = JSON.parse(readFile);
-
-  var friendList = readJson.firendList;
-
-  var buildArray = [];
-
-  for(var i=0; i< friendList.length; i++){
-
-    if(toId == friendList[i].friendId && confirm){
-
-      friendList[i].status = confirm;
-
-    } else {
-
-      if(toId == friendList[i].friendId && !confirm){
-
-        delete friendList[friendList[i]];
-
+        }
       }
+
+      buildArray.push(friendList[i]);
+
     }
 
-    buildArray.push(friendList[i]);
+    var getData = {};
+
+    getData.firendList = friendList;
+
+    var dataToWrite = JSON.stringify(getData, null, 2);
+
+    var fileWrite = fs.writeFileSync(fileName, dataToWrite);
+
+    console.log("Request accepted ? : ", confirm);
+
+    return true;
 
   }
 
-  var getData = {};
+  /*
+  app.post("/friend-list", accessFriendList);
 
-  getData.firendList = friendList;
+  function accessFriendList(req, res, next) {
 
-  var dataToWrite = JSON.stringify(getData, null, 2);
+    var fileName = "server/friend-list/" + req.body.userId + "-friend-list.json";
 
-  var fileWrite = fs.writeFileSync(fileName, dataToWrite);
+    var readFile = fs.readFileSync(fileName);
 
-  console.log("Request accepted ? : ", confirm);
+    var readJson = JSON.parse(readFile);
 
-  return true;
+    var friendList = readJson.firendList;
 
-}
+    var buildList = [];
 
-app.post("/friend-list", accessFriendList);
+    var data = {};
 
-function accessFriendList(req, res, next) {
+    for(var i=0; i<friendList.length; i++){
 
-  var fileName = "server/friend-list/" + req.body.userId + "-friend-list.json";
+      if(friendList[i].status == true) {
 
-  var readFile = fs.readFileSync(fileName);
+        var friendObj = {};
 
-  var readJson = JSON.parse(readFile);
+        var friendId = friendList[i].friendId;
 
-  var friendList = readJson.firendList;
+        var status = friendList[i].status;
 
-  var buildList = [];
+        friendList[i] = profileInfo(friendId);
 
-  var data = {};
+        friendList[i].isOnline = isFriendOnline(friendId);
 
-  for(var i=0; i<friendList.length; i++){
+        friendList[i].isFriend = status;
 
-    if(friendList[i].status == true) {
+        friendList[i].friendId = friendId;
 
-      var friendObj = {};
+        delete friendList[i]['friendListFile'];
+        delete friendList[i]['messageBook'];
+        delete friendList[i]['status'];
+        delete friendList[i]['birthday'];
+        delete friendList[i]['email'];
+        delete friendList[i]['fName'];
+        delete friendList[i]['lName'];
 
-      var friendId = friendList[i].friendId;
+        buildList.push(friendList[i]);
+      }
 
-      var status = friendList[i].status;
-
-      friendList[i] = profileInfo(friendId);
-
-      friendList[i].isOnline = isFriendOnline(friendId);
-
-      friendList[i].isFriend = status;
-
-      friendList[i].friendId = friendId;
-
-      delete friendList[i]['friendListFile'];
-      delete friendList[i]['messageBook'];
-      delete friendList[i]['status'];
-      delete friendList[i]['birthday'];
-      delete friendList[i]['email'];
-      delete friendList[i]['fName'];
-      delete friendList[i]['lName'];
-
-      buildList.push(friendList[i]);
     }
 
+    data.friendList = buildList;
+
+    res.send(data);
   }
-
-  data.friendList = buildList;
-
-  res.send(data);
-}
+  */

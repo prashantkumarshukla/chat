@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { UserDetailComponent } from "../user-detail/user-detail.component";
-import { MdDialog } from "@angular/material";
+import { MatDialog } from "@angular/material";
 import { SocketProviderService} from "../services/socket-provider.service";
 
 @Component({
@@ -14,7 +14,7 @@ export class MessageListComponent implements OnInit {
 
     private socketProviderService : SocketProviderService,
 
-    public dialog: MdDialog
+    public dialog: MatDialog
 
     ) { }
 
@@ -42,7 +42,7 @@ export class MessageListComponent implements OnInit {
 
       if(getMessages) {
 
-        for (var i = 0; i < getMessages.length; i++) {
+        for (let i = 0; i < getMessages.length; i++) {
 
           if (getMessages[i].userId) {
 

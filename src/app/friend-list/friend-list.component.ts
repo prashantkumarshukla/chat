@@ -1,8 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { MdTabGroup } from "@angular/material";
+import { MatTabGroup } from "@angular/material";
 import { HttpServiceService } from "../http-service.service";
 import { UserDetailComponent } from "../user-detail/user-detail.component";
-import { MdDialog } from "@angular/material";
+import { MatDialog } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../services/socket-provider.service";
 
@@ -10,7 +10,7 @@ import { SocketProviderService } from "../services/socket-provider.service";
   selector: 'app-friend-list',
   templateUrl: './friend-list.component.html',
   styleUrls: ['./friend-list.component.scss'],
-  providers: [MdTabGroup, HttpServiceService]
+  providers: [MatTabGroup, HttpServiceService]
 })
 export class FriendListComponent implements OnInit {
 
@@ -24,7 +24,7 @@ export class FriendListComponent implements OnInit {
 
     private socketProviderService: SocketProviderService,
 
-    public dialog: MdDialog
+    public dialog: MatDialog
 
   ) { }
 
@@ -44,11 +44,11 @@ export class FriendListComponent implements OnInit {
 
     let newList = new Promise((resolve, reject) => {
 
-      this.httpService.friendList(this.userId).toPromise().then(
+      this.httpService.friendList(this.userId).subscribe(
 
         res => {
 
-          this.friendList = res.friendList;
+          //this.friendList = res.friendList;
 
           console.log("Friend List:", this.friendList);
 

@@ -1,20 +1,18 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
-import { MdTabGroup } from "@angular/material";
-import { MdTab } from "@angular/material";
+import { MatTabGroup } from "@angular/material";
+import { MatTab } from "@angular/material";
 import { ModalService } from "../modal/modal.service";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { FacebookService, LoginResponse, InitParams } from "ngx-facebook";
 import { CreateUserService } from "../login-panel/create-user.service" ;
 import { RegistrationFormComponent } from "../registration-form/registration-form.component";
 import { Router } from "@angular/router";
-import { MdDialog } from "@angular/material";
+import { MatDialog } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../services/socket-provider.service";
-import { Subscription } from "rxjs/Subscription";
-import {resolve} from "url";
-import {reject} from "q";
-import 'rxjs/add/operator/toPromise';
-import * as io from 'socket.io-client';
+import {Subscription} from "rxjs";
+import {Subject} from "rxjs";
+import {takeUntil} from "rxjs/operators";
 
 @Component({
   selector: 'app-login-panel',
@@ -22,8 +20,8 @@ import * as io from 'socket.io-client';
   styleUrls: ['./login-panel.component.scss'],
   providers :[
     CreateUserService,
-    MdTabGroup,
-    MdTab
+    MatTabGroup,
+    MatTab
   ]
 })
 export class LoginPanelComponent implements OnInit,OnDestroy {
@@ -41,6 +39,7 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
   public statusResponse: any;
   public response : any;
   private loginSubscription: Subscription;
+  unsubscribe$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     public modalService: ModalService,
@@ -49,7 +48,7 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
     private loginFormBuilder : FormBuilder,
     private createUserService : CreateUserService,
     private router : Router,
-    public dialog: MdDialog,
+    public dialog: MatDialog,
     private cookieFeatureService : CookieService,
     private socketProviderService : SocketProviderService
   ) {
@@ -121,52 +120,19 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
   }
 
   registerUser(post) : void {
-
     var dob = post.month + "/" + post.day + "/" + post.year;
-
     post.birthday = dob;
     post.id=new Date().valueOf().toString();
     post.type = "normal";
-
     delete post['month'];
     delete post['day'];
     delete post['year'];
     delete post['validate'];
-
     this.createUserService.createUser(post).subscribe(res => this.statusResponse = res );
-
   }
 
-
   uerLogin(data) : void {
-
       this.socketProviderService.userLogin(data);
-
-
-   /* let submitData = new Promise((resolve, reject) => {
-
-      this.createUserService.loginUser(data).toPromise().then(
-
-        res => {
-
-          this.statusResponse = res;
-
-          console.log("Login status", this.statusResponse);
-
-          if(this.statusResponse.status.valid == true){
-
-            this.cookieFeatureService.set("user",this.statusResponse.status.id);
-
-            this.router.navigate(['/chat']);
-
-          }
-
-        }
-
-      )
-
-    });*/
-
   }
 
   openDialog() {
@@ -174,7 +140,6 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
       width: '87%',
       data : 'This text is passed into the dialog'
     });
-
     dialogRef.afterClosed().subscribe(result =>{
       console.log(`Dialog closed: ${result}`);
       this.dialogResult = result;
@@ -182,29 +147,19 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
   }
 
   ngOnInit() {
-
-    this.loginSubscription = this.socketProviderService.serverInteraction().subscribe(status => {
-
-      console.log("Status is:", status);
-
-      this.statusResponse = status;
-
-      if(this.statusResponse.success){
-
-        this.cookieFeatureService.set("user",this.statusResponse.userId);
-
-        this.router.navigate(['/chat']);
-
-      }
-
+    this.loginSubscription = this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.unsubscribe$))
+      .subscribe(status => {
+        console.log("Status is:", status);
+        this.statusResponse = status;
+        if (this.statusResponse.success) {
+          this.cookieFeatureService.set("user",this.statusResponse.userId);
+          this.router.navigate(['/chat']);
+        }
     });
-
   }
-
   ngOnDestroy(){
-
+    //this.unsubscribe$.next(true);
     //this.loginSubscription.unsubscribe();
-    //this.loginSubscription.next();
-
   }
 }

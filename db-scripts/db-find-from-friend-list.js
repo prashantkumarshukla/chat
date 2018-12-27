@@ -7,7 +7,7 @@ var mongoUrl = 'mongodb://localhost:27017/';
 
 mongoClient.connect(mongoUrl, function (err,db) {
 
-  console.log('find db called: ');
+  console.log('friend list table called: ');
 
   if(err) {
 
@@ -17,7 +17,7 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    dbo.collection('userProfile')
+    dbo.collection('friendList')
       .find({}, {email: 1}).toArray(function(err, result) {
 
       if(err) {

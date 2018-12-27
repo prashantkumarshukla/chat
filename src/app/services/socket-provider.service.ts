@@ -1,18 +1,13 @@
 import { Injectable } from '@angular/core';
-import { Observable } from "rxjs/Observable";
+import {Observable} from "rxjs";
 import * as io from 'socket.io-client';
-import {BehaviorSubject} from "rxjs/BehaviorSubject";
-import {any} from "codelyzer/util/function";
+import {BehaviorSubject} from "rxjs";
 
 @Injectable()
 export class SocketProviderService {
-
   socket;
-
   constructor() {
-
     this.socket = io();
-
   }
 
   private dataSource = new BehaviorSubject<any>("");
@@ -21,81 +16,73 @@ export class SocketProviderService {
   private userTyping = new BehaviorSubject<any>("");
   typingDataSource = this.userTyping.asObservable();
 
-  updateData(data : any){
-
+  public updateData(data : any): void {
     this.dataSource.next(data);
   }
 
-  updateTypingStatus(data : any){
-
+  public updateTypingStatus(data : any): void {
     this.userTyping.next(data);
   }
 
-  userLogin(data){
-
+  public userLogin(data): void {
     this.socket.emit('login',data);
-
   }
 
-  typingStatus(data) {
-
+  public typingStatus(data): void {
     this.socket.emit('typing', data);
   }
 
-  serverInteraction() {
-
-    let observable = new Observable(observer => {
-
-      this.socket.on('login done', (data) => {
-
-        observer.next(data);
-
-      });
-
-      this.socket.on('new message', (chats) => {
-
-        observer.next(chats);
-
-      });
-
-
-      this.socket.on('friend-list-sent', (friendList) => {
-
-        observer.next(friendList);
-
-      });
-
-      this.socket.on('user-is-typing',(typing) => {
-
-        console.log("Typing", typing);
-
-        observer.next(typing);
-
-      });
-
-
-      return () => {
-
-        this.socket.disconnect();
-      };
-
-    });
-
-    return observable;
-
-
+  public sendFriendRequest(data): void {
+    this.socket.emit('sent-request', data);
   }
 
-  sendMessage(data){
+  public confirmFriendRequest(data): void {
+    this.socket.emit('confirm-friend-request', data);
+  }
 
+  public searchUser(data): void {
+    this.socket.emit('search-user', data);
+  }
+
+  public sendMessage(data): void {
     this.socket.emit('chating',data);
-
   };
 
-  getFriendList(id) {
-
+  public getFriendList(id): void {
     this.socket.emit('friend-list',id);
-
   }
 
+  public serverInteraction() {
+    let observable = new Observable(observer => {
+      this.socket.on('login done', (data) => {
+        observer.next(data);
+      });
+      this.socket.on('new message', (chats) => {
+        observer.next(chats);
+      });
+      this.socket.on('friend-list-sent', (friendList) => {
+        observer.next(friendList);
+      });
+      this.socket.on('user-is-typing',(typing) => {
+        console.log("Typing", typing);
+        observer.next(typing);
+      });
+      this.socket.on('friend-request-status',(requestStatus) => {
+        console.log('Friend Request Status: ' + requestStatus);
+        observer.next(requestStatus);
+      });
+      this.socket.on('friend-request-update',(friendRequestUpdate) => {
+        console.log('Friend Request Update: ' + friendRequestUpdate);
+        observer.next(friendRequestUpdate);
+      });
+      this.socket.on('search-user-list',(searchList) => {
+        console.log('Search User: ' + searchList);
+        observer.next(searchList);
+      });
+      return () => {
+        this.socket.disconnect();
+      };
+    });
+    return observable;
+  }
 }

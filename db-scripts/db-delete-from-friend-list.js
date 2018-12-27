@@ -14,9 +14,9 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    var myquery = { email: 'prashantkumarshukla@gmail.com' };
+    var myquery = { id: '1526963353566' };
 
-    dbo.collection('userProfile')
+    dbo.collection('friendList')
       .deleteOne(myquery, function(err, result) {
 
       if(err) {

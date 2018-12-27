@@ -1,0 +1,23 @@
+<div *ngIf="friendStatus.isFriend !== 'pending' || !friendStatus.isFriend || !sentRequest">
+  <button
+    mat-raised-button
+    type="button"
+    (click)="sendFriendRequest(friendStatus.friendId)">
+    ADD ON MESSENGER
+  </button>
+</div>
+<div *ngIf="friendStatus.isFriend === 'pending'">
+  <p>{{friendStatus.name}} has sent you the Friend Request.</p>
+  <button
+    mat-raised-button
+    (click)="confirmRequest(friendStatus.friendId,'accept')"
+    type="button">
+    CONFIRM
+  </button>
+  <button
+    mat-raised-button
+    (click)="confirmRequest(friendStatus.friendId,'delete')"
+    type="button">
+    Deny
+  </button>
+</div>

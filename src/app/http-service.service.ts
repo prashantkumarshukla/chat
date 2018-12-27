@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Http, Response } from "@angular/http";
-import 'rxjs/add/operator/map';
+import {HttpClient} from "@angular/common/http";
+import {Observable} from "rxjs";
 
 @Injectable()
 export class HttpServiceService {
 
-  constructor(private _http : Http) { }
+  constructor(private http : HttpClient) { }
 
   serverDomain:string = '/';
 
@@ -70,9 +70,9 @@ export class HttpServiceService {
   }
 
   retrieveData (url,data){
-
-    return this._http.post(url, data).map((res:Response) => res.json());
-
+    return this.http.post(
+      url, data, {observe: 'response' }
+    );
   }
 
 }

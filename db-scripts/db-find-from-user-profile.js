@@ -28,10 +28,7 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
         db.close();
 
-        for(var i=0; i<result.length; i++){
-
-          console.log('Result is: '+ result[i].email);
-        }
+        console.log('Result is: '+ JSON.stringify(result));
       }
 
     });

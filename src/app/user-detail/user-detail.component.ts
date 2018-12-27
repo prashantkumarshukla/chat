@@ -1,15 +1,9 @@
-import { Component, OnInit, Inject, OnDestroy } from '@angular/core';
-import { MdDialogRef } from "@angular/material";
-import { MD_DIALOG_DATA } from "@angular/material";
+import {Component, OnInit, Inject, OnDestroy, Input} from '@angular/core';
 import { HttpServiceService } from "../http-service.service";
 import { CookieService } from "ngx-cookie-service";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { SocketProviderService } from "../services/socket-provider.service";
-import { Subscription } from "rxjs/Subscription";
-import {resolve} from "url";
-import {reject} from "q";
-import 'rxjs/add/operator/toPromise';
-import {noUndefined} from "@angular/compiler/src/util";
+import { StateStoreService } from "../services/state-store.service";
 
 @Component({
   selector: 'app-user-detail',
@@ -23,72 +17,34 @@ import {noUndefined} from "@angular/compiler/src/util";
 export class UserDetailComponent implements OnInit,OnDestroy {
 
   messageForm: FormGroup;
+  public data : any;
+  public friendId : any;
+  public isFriend : any;
+  public friendStatus : any;
+  public isOnline : any;
+  public conversations : any;
+  public typeResponse : any;
+  public btnActionData : any;
+  private getUserId : any;
 
+  @Input() userDetail : any;
 
   constructor(
-
     private formBuilder : FormBuilder,
-
-    public thisDialogRef : MdDialogRef<UserDetailComponent>,
-
-    @Inject(MD_DIALOG_DATA) public data : any,
-
+    private stateStore: StateStoreService,
     public httpService: HttpServiceService,
-
     private cookieFeatureService : CookieService,
-
     private socketProviderService : SocketProviderService
-
   ) {
-
     this.messageForm = formBuilder.group({
-
       'chatMessage' : ''
-
     });
   }
-
-  public loginId : any;
-
-  public friendId : any;
-
-  public isFriend : any;
-
-  public friendStatus : any;
-
-  public isOnline : any;
-
-  public conversations : any;
-
-  public getMessage: Subscription;
-
-  public typeResponse : any;
-
   closeConfirm() :void {
-
-    this.thisDialogRef.close("Closed");
-
+    //this.thisDialogRef.close("Closed");
   }
 
-  sendFriendRequest(friendId) : void {
-
-    let post = {"friendId" : friendId,"userId":this.cookieFeatureService.get("user")};
-
-    let sendRequest = new Promise((resolve, reject) => {
-
-      this.httpService.friendRequest(post).toPromise().then(
-        res => {
-          this.isFriend = res.status;
-
-          console.log("Response:", res);
-
-        }
-      );
-    });
-
-  }
-
-  confirmRequest(friendId,action) : void {
+  /*confirmRequest(friendId,action) : void {
 
     let post = {"friendId" : friendId,"userId":this.cookieFeatureService.get("user"),"action" : action};
 
@@ -108,91 +64,57 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
     });
 
-  }
+  }*/
 
   sendMessage(getMsg) : void {
-
     let messagePost = {
-
       "toSocketId" : this.data.friendId,
-
       "fromSocketId":this.cookieFeatureService.get("user"),
-
       "fromName" : this.data.name,
-
       "message" : getMsg.chatMessage
-
     };
-
     this.messageForm.reset();
-
     this.socketProviderService.sendMessage(messagePost);
-
   }
 
   userTyping(typingStatus) : void {
-
-    let userId = this.cookieFeatureService.get("user");
-
+    let userId = this.getUserId;
     let friendId = this.data.friendId;
-
     let sendData = { "userId" : userId, "friendId" : friendId, "typing" : typingStatus };
-
     this.socketProviderService.typingStatus(sendData);
-
   }
 
   ngOnInit() {
-
+    this.data = this.stateStore.userInfo;
     console.log("Data from parent", this.data);
-
+    this.getUserId = this.cookieFeatureService.get("user");
     this.friendStatus = this.data.isFriend;
-
     this.isOnline = this.data.isOnline;
-
+    this.btnActionData = {
+      'friendId' : this.data.friendId,
+      'isFriend' : this.friendStatus
+    };
     this.socketProviderService.newDataSource.subscribe(message => {
-
-
       let getMessages = message.conversations;
-
       let getId = this.data.friendId;
-
       if(getMessages) {
-
         for (var i = 0; i < getMessages.length; i++) {
-
           if (getId == getMessages[i].userId) {
-
             this.conversations = getMessages[i].detail;
-
             this.friendStatus = getMessages[i].isFriend;
-
             this.isOnline = getMessages[i].isOnline;
-
             console.log("Conversations", this.conversations);
-
             break;
-
           }
-
         }
-
         console.log("Message:", message);
-
       }
-
     });
-
     this.socketProviderService.typingDataSource.subscribe(typing => {
-
       if(typing.friendId == this.data.friendId) {
-
         this.typeResponse = typing.typingMsg;
-
       }
-
     });
-
   }
 
   ngOnDestroy(){}

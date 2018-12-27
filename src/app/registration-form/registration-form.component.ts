@@ -1,18 +1,15 @@
 import { Component, OnInit, Inject } from '@angular/core';
-import { MdDialogRef } from "@angular/material";
-import { MD_DIALOG_DATA } from "@angular/material";
+import { MatDialogRef } from "@angular/material";
+import { MAT_DIALOG_DATA } from "@angular/material";
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { MdGridList } from "@angular/material";
+import { MatGridList } from "@angular/material";
 import { CreateUserService } from "../login-panel/create-user.service" ;
-import {resolve} from "url";
-import {reject} from "q";
-import 'rxjs/add/operator/toPromise';
 
 @Component({
   selector: 'app-registration-form',
   templateUrl: './registration-form.component.html',
   styleUrls: ['./registration-form.component.scss'],
-  providers : [CreateUserService, MdGridList]
+  providers : [CreateUserService, MatGridList]
 })
 export class RegistrationFormComponent implements OnInit {
 
@@ -26,8 +23,8 @@ export class RegistrationFormComponent implements OnInit {
   public getResponse: any;
   public responseInfo : any;
 
-  constructor( public thisDialogRef : MdDialogRef<RegistrationFormComponent>,
-               @Inject(MD_DIALOG_DATA) public data : string,
+  constructor( public thisDialogRef : MatDialogRef<RegistrationFormComponent>,
+               @Inject(MAT_DIALOG_DATA) public data : string,
                private formBuilder : FormBuilder,
                private createUserService : CreateUserService) {
 

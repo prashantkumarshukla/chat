@@ -1,0 +1,47 @@
+<mat-toolbar color="primary">
+  <span>WebChat</span>
+  <span class="spacer"></span>
+  <button mat-icon-button [matMenuTriggerFor]="menu">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button md-menu-item>
+      <mat-icon>fingerprint</mat-icon>
+      <span>Logout</span>
+    </button>
+    <button md-menu-item>
+      <mat-icon>fingerprint</mat-icon>
+      <span>My profile</span>
+    </button>
+  </mat-menu>
+</mat-toolbar>
+<mat-tab-group>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <i class="material-icons">
+        chat
+      </i>
+    </ng-template>
+  </mat-tab>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <i class="material-icons">
+        account_circle
+      </i>
+    </ng-template>
+  </mat-tab>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <i class="material-icons" (click)="goToSearch()">search</i>
+    </ng-template>
+  </mat-tab>
+  <mat-tab>
+    <ng-template mat-tab-label>
+      <i class="material-icons">supervisor_account</i>
+      <span class="counter">
+        <app-friend-list-counter></app-friend-list-counter>
+      </span>
+    </ng-template>
+    <app-friend-request-list></app-friend-request-list>
+  </mat-tab>
+</mat-tab-group>

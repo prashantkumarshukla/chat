@@ -1,11 +1,10 @@
-
-  <md-dialog-actions>
-    <button md-raised-button (click)="closeConfirm()">X</button>
-  </md-dialog-actions>
+ <mat-dialog-actions>
+    <button mat-raised-button (click)="closeConfirm()">X</button>
+  </mat-dialog-actions>
   <h2 my-dialog-title>Sign Up</h2>
   <hr />
 
-  <md-dialog-content>
+  <mat-dialog-content>
     <div *ngIf="!statusResponse; then formBlock else elseResponseBlock"></div>
 
     <ng-template #formBlock>
@@ -193,5 +192,5 @@
         <p class="p-all-25">{{responseInfo}}</p>
       </div>
     </ng-template>
-  </md-dialog-content>
+  </mat-dialog-content>
 

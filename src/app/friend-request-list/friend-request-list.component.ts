@@ -1,12 +1,8 @@
 import { Component, OnInit, OnChanges } from '@angular/core';
 import { UserDetailComponent } from "../user-detail/user-detail.component";
 import { HttpServiceService } from "../http-service.service";
-import { MdDialog } from "@angular/material";
-import {resolve} from "url";
-import {reject} from "q";
-import 'rxjs/add/operator/toPromise';
+import { MatDialog } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
-
 
 
 @Component({
@@ -21,7 +17,7 @@ export class FriendRequestListComponent implements OnInit {
 
     private httpService : HttpServiceService,
     private cookieFeatureService : CookieService,
-    public dialog: MdDialog
+    public dialog: MatDialog
 
   ) { }
 
@@ -37,7 +33,7 @@ export class FriendRequestListComponent implements OnInit {
 
     let newList = new Promise((resolve, reject) => {
 
-      this.httpService.newRequestList(this.userId).toPromise().then(
+      this.httpService.newRequestList(this.userId).subscribe().then(
 
         res => {
 
