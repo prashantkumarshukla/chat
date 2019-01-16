@@ -19,6 +19,7 @@ var io = require('socket.io').listen(server);
 var users = {};
 var userDetail = {};
 var friendList = {};
+var notificationList = {};
 var searchUserConfig = require('./server/search-user.js');
 var loginVerify = require('./server/login-validation.js');
 
@@ -73,6 +74,25 @@ io.sockets.on('connection', function(socket) {
     });
   });
 
+  socket.on("get-notification-list", function (request) {
+    var filterData = {receiverId: request};
+    findQueryInDB(dbCollectionName.friendList, filterData, function (response) {
+      console.log("get-notification-list:= ", response);
+      for(var i =0 ;i<response.length;i++)
+      {
+       if(response[i]){
+         var query = {id :response[i].senderId};
+         findQueryInDB(dbCollectionName.userProfile, query, function (usersData) {
+           console.log('get-user-list:=' + usersData);
+           users[request].emit('get-notifications', usersData);
+         })
+       }
+      }
+    });
+  });
+
+
+
   socket.on("sent-request", function (reqData) {
     insertInDB(dbCollectionName.friendList, reqData, function (response) {
       var successResponse = {
@@ -84,8 +104,9 @@ io.sockets.on('connection', function(socket) {
         "request": "sent"
       };
       var failiureResponse = {"status": false, "code": 500};
-      response ? users[reqData.id].emit('friend-request-status', successResponse) :
-        users[reqData.id].emit('friend-request-status', failiureResponse);
+      console.log('req.id:= '+reqData.id);
+      response ? users[reqData.receiverId].emit('friend-request-status', successResponse) :
+        users[reqData.receiverId].emit('friend-request-status', failiureResponse);
       console.log('Friend request status:', successResponse);
     });
   });

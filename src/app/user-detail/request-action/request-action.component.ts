@@ -19,14 +19,6 @@ export class RequestActionComponent implements OnInit {
     private cookieFeatureService : CookieService,
     private socketProviderService : SocketProviderService
   ) {}
-  sendFriendRequest(friendId) : void {
-    let fromId = this.userId.userId;
-    let reqObj = {
-      'id':fromId,
-      'friendId': friendId
-    };
-    this.socketProviderService.sendFriendRequest(reqObj);
-  }
 
   confirmRequest(friendId,action) : void {
     let reqObj = {

@@ -29,6 +29,7 @@ import { HeaderComponent } from './header/header.component';
 import {StateStoreService} from "./services/state-store.service";
 import {UserSearchService} from "./search-user/user-search.service";
 import {HttpClientModule} from "@angular/common/http";
+import { AddFriendComponent } from './user-detail/request-action/add-friend/add-friend.component';
 
 const appRoutes:Routes = [
   {
@@ -56,6 +57,10 @@ const appRoutes:Routes = [
     path: 'user',
     component : UserDetailComponent
   },
+  {
+    path: 'notifications',
+    component : FriendRequestListComponent
+  }
 ];
 
 @NgModule({
@@ -72,7 +77,8 @@ const appRoutes:Routes = [
     FriendRequestListComponent,
     MessageListComponent,
     RequestActionComponent,
-    HeaderComponent
+    HeaderComponent,
+    AddFriendComponent
   ],
   imports: [
     RouterModule.forRoot(

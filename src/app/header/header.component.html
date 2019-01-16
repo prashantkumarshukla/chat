@@ -37,11 +37,10 @@
   </mat-tab>
   <mat-tab>
     <ng-template mat-tab-label>
-      <i class="material-icons">supervisor_account</i>
+      <i class="material-icons" (click)="goToNotification()">Notifications</i>
       <span class="counter">
         <app-friend-list-counter></app-friend-list-counter>
       </span>
     </ng-template>
-    <app-friend-request-list></app-friend-request-list>
   </mat-tab>
 </mat-tab-group>

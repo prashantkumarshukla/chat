@@ -20,8 +20,12 @@ export class HeaderComponent implements OnInit {
     private router: Router
   ) {}
 
-  public goToSearch():void {
+  public goToSearch(): void {
     this.router.navigate(['/search']);
+  }
+
+  public goToNotification(): void {
+    this.router.navigate(['/notifications']);
   }
 
   ngOnInit() {

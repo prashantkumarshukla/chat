@@ -16,16 +16,16 @@ export class SocketProviderService {
   private userTyping = new BehaviorSubject<any>("");
   typingDataSource = this.userTyping.asObservable();
 
-  public updateData(data : any): void {
+  public updateData(data: any): void {
     this.dataSource.next(data);
   }
 
-  public updateTypingStatus(data : any): void {
+  public updateTypingStatus(data: any): void {
     this.userTyping.next(data);
   }
 
   public userLogin(data): void {
-    this.socket.emit('login',data);
+    this.socket.emit('login', data);
   }
 
   public typingStatus(data): void {
@@ -45,15 +45,19 @@ export class SocketProviderService {
   }
 
   public sendMessage(data): void {
-    this.socket.emit('chating',data);
-  };
+    this.socket.emit('chating', data);
+  }
 
   public getFriendList(id): void {
-    this.socket.emit('friend-list',id);
+    this.socket.emit('friend-list', id);
+  }
+
+  public getNotificationList(userId): void {
+    this.socket.emit('get-notification-list', userId);
   }
 
   public serverInteraction() {
-    let observable = new Observable(observer => {
+    const observable = new Observable(observer => {
       this.socket.on('login done', (data) => {
         observer.next(data);
       });
@@ -63,21 +67,25 @@ export class SocketProviderService {
       this.socket.on('friend-list-sent', (friendList) => {
         observer.next(friendList);
       });
-      this.socket.on('user-is-typing',(typing) => {
-        console.log("Typing", typing);
+      this.socket.on('user-is-typing', (typing) => {
+        console.log('Typing', typing);
         observer.next(typing);
       });
-      this.socket.on('friend-request-status',(requestStatus) => {
+      this.socket.on('friend-request-status', (requestStatus) => {
         console.log('Friend Request Status: ' + requestStatus);
         observer.next(requestStatus);
       });
-      this.socket.on('friend-request-update',(friendRequestUpdate) => {
+      this.socket.on('friend-request-update', (friendRequestUpdate) => {
         console.log('Friend Request Update: ' + friendRequestUpdate);
         observer.next(friendRequestUpdate);
       });
-      this.socket.on('search-user-list',(searchList) => {
+      this.socket.on('search-user-list', (searchList) => {
         console.log('Search User: ' + searchList);
         observer.next(searchList);
+      });
+      this.socket.on('get-notifications', (friendRequestList) => {
+        console.log('friend Request: ' + friendRequestList);
+        observer.next(friendRequestList);
       });
       return () => {
         this.socket.disconnect();

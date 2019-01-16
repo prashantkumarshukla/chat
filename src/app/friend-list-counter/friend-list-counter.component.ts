@@ -11,21 +11,21 @@ export class FriendListCounterComponent implements OnInit {
 
   constructor(
 
-    private httpService : HttpServiceService
+    private httpService: HttpServiceService
 
   ) { }
 
-  public counter :string;
+  public counter: string;
 
-  getCounter() : void {
+  getCounter(): void {
 
-    let freshCounter = new Promise((resolve, reject) => {
+    const freshCounter = new Promise((resolve, reject) => {
 
-      this.httpService.newFriendRequest.toPromise().then( res =>{
+      this.httpService.newFriendRequest.toPromise().then( res => {
 
         this.counter = res.requestList.length;
 
-        console.log("Request count", this.counter);
+        console.log('Request count', this.counter);
 
       });
 

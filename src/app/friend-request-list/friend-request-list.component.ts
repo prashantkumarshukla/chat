@@ -1,77 +1,46 @@
-import { Component, OnInit, OnChanges } from '@angular/core';
-import { UserDetailComponent } from "../user-detail/user-detail.component";
-import { HttpServiceService } from "../http-service.service";
-import { MatDialog } from "@angular/material";
+import {Component, Input, OnInit} from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
+import { SocketProviderService } from "../services/socket-provider.service";
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
+import {Subscription} from 'rxjs/index';
+
 
 
 @Component({
   selector: 'app-friend-request-list',
   templateUrl: './friend-request-list.component.html',
   styleUrls: ['./friend-request-list.component.scss'],
-  providers :[]
+  providers: []
 })
 export class FriendRequestListComponent implements OnInit {
 
-  constructor(
-
-    private httpService : HttpServiceService,
-    private cookieFeatureService : CookieService,
-    public dialog: MatDialog
-
+  constructor(private socketProviderService: SocketProviderService,
+              private cookieService: CookieService
   ) { }
 
-  public friendRequest : any;
+  public friendRequest: any;
 
-  public userId : any;
+  public userId: string;
 
-  public conitinue : boolean;
+  private searchSubscription : Subscription;
+  destroy$: Subject<boolean> = new Subject<boolean>();
 
-  retrieveFriendList() : void {
-
-    this.userId = {"userId" :this.cookieFeatureService.get("user")};
-
-    let newList = new Promise((resolve, reject) => {
-
-      this.httpService.newRequestList(this.userId).subscribe().then(
-
-        res => {
-
-          this.friendRequest = res.requestList;
-
-          this.conitinue = true;
-
-          console.log("Friend List:", this.friendRequest);
-
-        }
-
-      );
-
-    });
-
+  retrieveFriendList(): void {
+    this.socketProviderService.getNotificationList(this.userId);
   }
 
-  userDetailOpenDialog(userInfo): void {
-    console.log("User Detail", userInfo);
-    let dialogRef = this.dialog.open(UserDetailComponent, {
-      width: '87%',
-      data: userInfo
-    });
-  }
 
   ngOnInit() {
-    this.conitinue = false;
+    this.userId = this.cookieService.get("user");
     this.retrieveFriendList();
-  }
 
-  ngOnChanges() {
-
-    if( this.conitinue == false ){
-
-      this.retrieveFriendList();
-
-    }
-
+    this.searchSubscription = this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(searchList => {
+        this.friendRequest = searchList;
+        console.log('Search list is: ' + JSON.stringify(this.friendRequest));
+      });
   }
 
 }

@@ -29,7 +29,7 @@ export class UserDetailComponent implements OnInit,OnDestroy {
 
   @Input() userDetail : any;
 
-  constructor(
+    constructor(
     private formBuilder : FormBuilder,
     private stateStore: StateStoreService,
     public httpService: HttpServiceService,
@@ -97,7 +97,7 @@ export class UserDetailComponent implements OnInit,OnDestroy {
     this.socketProviderService.newDataSource.subscribe(message => {
       let getMessages = message.conversations;
       let getId = this.data.friendId;
-      if(getMessages) {
+      if (getMessages) {
         for (var i = 0; i < getMessages.length; i++) {
           if (getId == getMessages[i].userId) {
             this.conversations = getMessages[i].detail;
