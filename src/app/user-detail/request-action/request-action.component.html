@@ -1,4 +1,4 @@
-<div *ngIf="friendStatus.isFriend === 'pending'">
+<div *ngIf="friendStatus.friendStatus === 'pending'">
   <p>{{friendStatus.name}} has sent you the Friend Request.</p>
   <button
     mat-raised-button
@@ -13,3 +13,4 @@
     Deny
   </button>
 </div>
+
