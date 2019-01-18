@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {MatTab} from "@angular/material";
+import {MatTab, MatTabChangeEvent} from '@angular/material';
 import {MatTabGroup} from "@angular/material";
 import {Router} from "@angular/router";
 import { HttpServiceService } from "../http-service.service";
@@ -19,14 +19,23 @@ export class HeaderComponent implements OnInit {
   constructor(
     private router: Router
   ) {}
-
-  public goToSearch(): void {
-    this.router.navigate(['/search']);
+  public tabNavigation(event: MatTabChangeEvent) {
+    switch (event.tab.textLabel) {
+        case  'friendList':
+          this.router.navigate(['/friendList']);
+          break;
+          case  'search':
+          this.router.navigate(['/search']);
+          break;
+      case 'notificationList':
+        this.router.navigate(['/notifications']);
+        break;
+      case 'chat':
+        this.router.navigate(['/chat']);
+        break;
+    }
   }
 
-  public goToNotification(): void {
-    this.router.navigate(['/notifications']);
-  }
 
   ngOnInit() {
   }

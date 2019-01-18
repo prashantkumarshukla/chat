@@ -8,6 +8,7 @@
       <mat-card-title>
         {{userInfo.fName}} {{userInfo.lName}}
       </mat-card-title>
+      <p></p>
       <mat-card-subtitle *ngIf="userInfo.isOnline; then onlineBlock else offLineBlock">
       </mat-card-subtitle>
       <ng-template #onlineBlock>

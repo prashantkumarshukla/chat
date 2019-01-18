@@ -14,7 +14,7 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    var myquery = { senderId: '1545956956173' };
+    var myquery = { senderId: '1545956875848' };
 
     dbo.collection('friendList')
       .deleteMany(myquery, function(err, result) {

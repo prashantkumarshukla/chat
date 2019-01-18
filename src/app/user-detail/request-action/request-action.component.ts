@@ -19,6 +19,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
   public confirmRequestResp: any;
   destroy$: Subject<boolean> = new Subject<boolean>();
   private confirmRequestsSubscription: Subscription;
+  private showSpinner: boolean;
   constructor(
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService,
@@ -27,6 +28,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
   }
 
   confirmRequest(friendId): void {
+    this.showSpinner = true;
     const reqObj = {
       'receiverId' : friendId,
       'senderId': this.userId,
@@ -37,10 +39,12 @@ export class RequestActionComponent implements OnInit , OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
         this.confirmRequestResp = response;
+        this.showSpinner = false;
       });
   }
 
   denyRequest(friendId): void {
+    this.showSpinner = true;
     const reqObj = {
       'receiverId' : friendId,
       'senderId': this.userId,
@@ -51,6 +55,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
         this.confirmRequestResp = response;
+        this.showSpinner = false;
       });
   }
 
@@ -58,6 +63,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
     this.userId = this.cookieFeatureService.get('user');
     this.userInfo = this.actionObj;
     this.confirmRequestResp = false;
+    this.showSpinner = false;
   }
 
   ngOnDestroy() {

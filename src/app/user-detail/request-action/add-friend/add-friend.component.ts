@@ -15,10 +15,11 @@ export class AddFriendComponent implements OnInit, OnDestroy{
   @Input() actionObj : any;
   public userInfo: any;
   public userId : any;
-  public sentRequest : any;
+  public sentRequest : boolean;
   destroy$: Subject<boolean> = new Subject<boolean>();
   public friendRequestStatus: Subscription;
   public ApiResp: any;
+  public showSpinner: boolean;
 
   constructor(
     private cookieFeatureService: CookieService,
@@ -30,10 +31,12 @@ export class AddFriendComponent implements OnInit, OnDestroy{
 
     this.userInfo = this.actionObj;
     this.sentRequest = false;
+    this.showSpinner = false;
 
   }
 
   sendFriendRequest(receiverId): void {
+    this.showSpinner = true;
     let senderId = this.cookieFeatureService.get("user");
     let reqObj = {
       'senderId': senderId,
@@ -46,6 +49,7 @@ export class AddFriendComponent implements OnInit, OnDestroy{
       .subscribe(response => {
         this.ApiResp = response;
         this.sentRequest = true;
+        this.showSpinner = false;
       });
   }
   ngOnDestroy() {

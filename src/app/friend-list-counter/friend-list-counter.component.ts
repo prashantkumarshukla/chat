@@ -19,7 +19,7 @@ export class FriendListCounterComponent implements OnInit {
 
   getCounter(): void {
 
-    const freshCounter = new Promise((resolve, reject) => {
+   /* const freshCounter = new Promise((resolve, reject) => {
 
       this.httpService.newFriendRequest.toPromise().then( res => {
 
@@ -30,11 +30,11 @@ export class FriendListCounterComponent implements OnInit {
       });
 
     });
-
+*/
   }
 
   ngOnInit() {
-    this.getCounter();
+    /*this.getCounter();*/
   }
 
 }

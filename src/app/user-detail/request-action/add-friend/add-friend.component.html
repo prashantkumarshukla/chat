@@ -1,4 +1,4 @@
-<div *ngIf="!userInfo.isFriend">
+<div *ngIf="!userInfo.isFriend && !sentRequest">
   <div *ngIf="userInfo.gender ==='Male'; then maleBlock else femaleBlock"></div>
   <ng-template #maleBlock>
     <p>
@@ -18,3 +18,12 @@
     ADD ON MESSENGER
   </button>
 </div>
+
+<div *ngIf="sentRequest">
+  Your request is sent successfully
+</div>
+
+<div *ngIf="showSpinner">
+  <mat-progress-spinner  mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
+</div>
+

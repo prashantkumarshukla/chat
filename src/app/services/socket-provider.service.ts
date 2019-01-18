@@ -89,6 +89,9 @@ export class SocketProviderService {
       this.socket.on('deny-request', (data) => {
         observer.next(data);
       });
+      this.socket.on('friend-request-status', (data) => {
+        observer.next(data);
+      });
     });
     return observable;
   }

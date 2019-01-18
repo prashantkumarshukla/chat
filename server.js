@@ -83,14 +83,14 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on("search-user", function (searchData) {
-    console.log("Search Data:", searchData);
     var filterData = {$or: [{fName: searchData.searchString}, {lName: searchData.searchString}]};
     console.log("Search Data:", JSON.stringify(filterData));
     findQueryInDB(dbCollectionName.userProfile, filterData, function (userProfileResp) {
-      console.log("Search List:", userProfileResp);
       var query = {$or: [{senderId: searchData.id}, {receiverId: searchData.id}]};
       findQueryInDB(dbCollectionName.friendList, query, function (friendListResp) {
+        //var record = isFriendExist.friendExist(data, searchData.id);
         console.log("Friend List Table:", friendListResp);
+        console.log("Search user Record:", userProfileResp);
         for(var i = 0; i < userProfileResp.length; i++) {
           for(var k = 0; k < friendListResp.length; k++) {
             if (friendListResp[k].senderId === userProfileResp[i].id ||
@@ -104,7 +104,7 @@ io.sockets.on('connection', function(socket) {
             }
           }
         }
-        console.log('final userProfileResp:=', userProfileResp);
+        console.log('final userProfileResp:=', userProfileResp)
         users[searchData.id].emit('search-user-list', userProfileResp);
       });
     });
@@ -135,16 +135,45 @@ io.sockets.on('connection', function(socket) {
 
 
   socket.on("confirm-friend-request", function (request) {
+
     var query = {$and: [{receiverId: request.senderId}, {senderId: request.receiverId}]};
     var data = { $set: {status: request.action}};
+
     console.log('query:=', JSON.stringify(query));
     console.log('data:=', JSON.stringify(data));
     updateInDB(dbCollectionName.friendList, query, data, function (friendRequestResp) {
       console.log('confirm-friend-request:=',request.receiverId );
       console.log('users:=',users);
-      var resp = {'requestConfirmed' : true};
-      users[request.senderId].emit('confirm-request', resp);
+      users[request.senderId].emit('confirm-request', true);
     })
+  });
+
+
+  socket.on("deny-friend-request", function (request) {
+
+    var query = {$and: [{receiverId: request.senderId}, {senderId: request.receiverId}]};
+
+    console.log('query:=', JSON.stringify(query));
+
+    deleteFromDB(dbCollectionName.friendList, query, function (friendRequestResp) {
+
+      var resp = {'isSuccess' : true};
+      console.log('friendRequestResp=',  friendRequestResp)
+      users[request.senderId].emit('deny-request', true);
+    })
+  });
+
+  socket.on("sent-request", function (reqData) {
+    insertInDB(dbCollectionName.friendList, reqData, function (response) {
+      var successResponse = {
+        "status": true,
+        "code": 200
+      };
+      var failiureResponse = {"status": false, "code": 500};
+      response ? users[reqData.senderId].emit('friend-request-status', successResponse) :
+        users[reqData.senderId].emit('friend-request-status', failiureResponse);
+      console.log('Friend request status:', successResponse);
+    });
   });
 });
 
@@ -207,6 +236,29 @@ io.sockets.on('connection', function(socket) {
       }
     });
   }
+
+
+function deleteFromDB(collectionName, query, callback) {
+  mongoClient.connect(mongoUrl, function (err, db) {
+    if (err) {
+      console.log('Database not connected: ' + err);
+      callback(false);
+    } else {
+      var dbo = db.db(dbName);
+      dbo.collection(collectionName)
+        .deleteOne(query, function (err, res) {
+          if (err) {
+            console.log('Data Deletion failed: ' + err);
+            callback(false);
+          } else {
+            console.log(res.insertedCount + ': Data Deletion successfully ');
+            callback(true);
+            db.close();
+          }
+        });
+    }
+  });
+}
 
   function updateInDB(collectionName, filter, data, callback) {
     mongoClient.connect(mongoUrl, function (err, db) {

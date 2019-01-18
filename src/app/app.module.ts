@@ -30,6 +30,8 @@ import {StateStoreService} from "./services/state-store.service";
 import {UserSearchService} from "./search-user/user-search.service";
 import {HttpClientModule} from "@angular/common/http";
 import { AddFriendComponent } from './user-detail/request-action/add-friend/add-friend.component';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+
 
 const appRoutes:Routes = [
   {
@@ -60,6 +62,10 @@ const appRoutes:Routes = [
   {
     path: 'notifications',
     component : FriendRequestListComponent
+  },
+  {
+    path: 'friendList',
+    component : FriendListComponent
   }
 ];
 
@@ -101,7 +107,8 @@ const appRoutes:Routes = [
     MatIconModule,
     MatTabsModule,
     MatDialogModule,
-    MatGridListModule
+    MatGridListModule,
+    MatProgressSpinnerModule
   ],
   entryComponents : [
     RegistrationFormComponent,

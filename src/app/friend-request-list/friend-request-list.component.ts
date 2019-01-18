@@ -29,8 +29,10 @@ export class FriendRequestListComponent implements OnInit {
 
   private searchSubscription : Subscription;
   destroy$: Subject<boolean> = new Subject<boolean>();
+  private showSpinner: boolean;
 
   retrieveFriendList(): void {
+    this.showSpinner = true;
     this.socketProviderService.getNotificationList(this.userId);
   }
 
@@ -44,6 +46,7 @@ export class FriendRequestListComponent implements OnInit {
       .subscribe(searchList => {
         this.friendRequest = searchList;
         console.log('Search list is: ' + JSON.stringify(this.friendRequest));
+        this.showSpinner = false;
       });
   }
 
