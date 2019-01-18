@@ -2,32 +2,38 @@ var mongoClient = require('mongodb');
 
 var mongoUrl = 'mongodb://localhost:27017/';
 
-// Delete query
+
+//Insert query
+
 mongoClient.connect(mongoUrl, function (err,db) {
 
-  console.log('find db called: ');
+  console.log('friend list table called: ');
 
   if(err) {
 
     console.log('Database not connected: ' +  err);
+
   } else {
 
     var dbo = db.db('chatdb');
+    var query = {"$and":[{"senderId":"1545956735814"},{"receiverId":"1545956956173"}]};
 
-    var myquery = { email: null };
+    var data ={"$set":{"status":"Pending"}};
 
-    dbo.collection('userProfile')
-      .deleteOne(myquery, function(err, result) {
+    dbo.collection('friendList')
+      .updateOne(query, data, function(err, result) {
 
       if(err) {
 
         console.log('Query not executed: ' +  err);
+
       } else {
 
-        console.log('Record delted');
-
         db.close();
+
+        console.log('Result is: '+ JSON.stringify(result));
       }
+
     });
   }
 });

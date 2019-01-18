@@ -4,6 +4,8 @@ import { SocketProviderService } from "../services/socket-provider.service";
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {Subscription} from 'rxjs/index';
+import { StateStoreService } from "../services/state-store.service";
+import { Router } from "@angular/router";
 
 
 
@@ -16,10 +18,12 @@ import {Subscription} from 'rxjs/index';
 export class FriendRequestListComponent implements OnInit {
 
   constructor(private socketProviderService: SocketProviderService,
-              private cookieService: CookieService
+              private cookieService: CookieService,
+              private stateStoreService: StateStoreService,
+              private router: Router
   ) { }
 
-  public friendRequest: any;
+  public friendRequest :any;
 
   public userId: string;
 
@@ -43,4 +47,9 @@ export class FriendRequestListComponent implements OnInit {
       });
   }
 
+  userDetailOpenDialog(user: any) {
+    console.log('User Detail', user);
+    this.stateStoreService.userInfo = user;
+    this.router.navigate(['/user']);
+  }
 }

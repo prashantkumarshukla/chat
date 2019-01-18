@@ -6,9 +6,9 @@
            class="header-image">
       </div>
       <mat-card-title>
-        {{data.name}}
+        {{userInfo.fName}} {{userInfo.lName}}
       </mat-card-title>
-      <mat-card-subtitle *ngIf="isOnline; then onlineBlock else offLineBlock">
+      <mat-card-subtitle *ngIf="userInfo.isOnline; then onlineBlock else offLineBlock">
       </mat-card-subtitle>
       <ng-template #onlineBlock>
         <span class="user-indicator online"></span>
@@ -24,18 +24,9 @@
       </ng-template>
     </mat-card-header>
     <mat-card-content>
-      <div *ngIf="friendStatus; then friendBlock else addFriendBlock"></div>
-      <ng-template #friendBlock></ng-template>
-      <ng-template #addFriendBlock>
-        <p *ngIf="data.gender === 'female' || data.gender === 'Female'">
-          She is not in your friend list. Send her request.
-        </p>
-        <p *ngIf="data.gender === 'male' || data.gender === 'Male'">
-          He is not in your friend list. Send him request.
-        </p>
-      </ng-template>
 
-      <app-add-friend [actionObj]="btnActionData"></app-add-friend>
+      <app-add-friend [actionObj]="userInfo"></app-add-friend>
+      <app-request-action [actionObj]="userInfo"></app-request-action>
       <hr />
       <div class="chat-pane">
         <div class="message-section"

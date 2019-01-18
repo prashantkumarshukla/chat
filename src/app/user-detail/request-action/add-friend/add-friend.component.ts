@@ -13,7 +13,7 @@ import {Subject} from "rxjs";
 export class AddFriendComponent implements OnInit {
 
   @Input() actionObj : any;
-  public friendStatus: any;
+  public userInfo: any;
   public userId : any;
   public sentRequest : any;
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -25,21 +25,12 @@ export class AddFriendComponent implements OnInit {
 
   ngOnInit() {
 
-    this.friendStatus = this.actionObj;
-    this.userId = {"userId" :this.cookieFeatureService.get("user")};
+    this.userInfo = this.actionObj;
     this.sentRequest = false;
-    this.socketProviderService.serverInteraction()
-      .pipe(takeUntil(this.destroy$)).subscribe(requestStatus => {
-      this.friendStatus = requestStatus;
-      console.log("Response: " + JSON.stringify(this.friendStatus));
-      if(this.friendStatus.status){
-        this.sentRequest = true;
-      }
-    });
   }
 
   sendFriendRequest(receiverId): void {
-    let senderId = this.userId.userId;
+    let senderId = this.cookieFeatureService.get("user");
     let reqObj = {
       'senderId': senderId,
       'receiverId': receiverId,

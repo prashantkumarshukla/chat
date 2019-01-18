@@ -18,7 +18,8 @@ mongoClient.connect(mongoUrl, function (err,db) {
     var dbo = db.db('chatdb');
 
     dbo.collection('userProfile')
-      .find({}, {email: 1}).toArray(function(err, result) {
+      .find({},{"email":"shivani.sharma@gmail.com"}
+      ).toArray(function(err, result) {
 
       if(err) {
 

@@ -14,17 +14,17 @@
     </form>
   </mat-card-content>
 </mat-card>
-<mat-card *ngFor="let item of searchResponse"
-         (click)="userDetail(item)">
+<mat-card *ngFor="let user of searchResponse"
+         (click)="userDetail(user)">
   <mat-card-content class="user-list">
     <i class="fa fa-user-circle-o fa-2x"
        aria-hidden="true">
     </i>
     <span class='indicator'
-          [ngClass]="{'online' : item.isOnline}">
+          [ngClass]="{'online' : user.isOnline}">
     </span>
     <span>
-      {{item.name}}
+      {{user.fName}} {{user.lName}}
     </span>
   </mat-card-content>
 </mat-card>

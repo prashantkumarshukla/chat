@@ -153,7 +153,7 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
         console.log("Status is:", status);
         this.statusResponse = status;
         if (this.statusResponse.success) {
-          this.cookieFeatureService.set("user",this.statusResponse.userId);
+          this.cookieFeatureService.set("user",this.statusResponse.id);
           this.router.navigate(['/chat']);
         }
     });

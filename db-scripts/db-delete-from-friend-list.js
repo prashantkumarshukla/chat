@@ -14,10 +14,10 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    var myquery = { senderId: '1526963353566' };
+    var myquery = { senderId: '1545956735814' };
 
     dbo.collection('friendList')
-      .deleteOne(myquery, function(err, result) {
+      .deleteMany(myquery, function(err, result) {
 
       if(err) {
 

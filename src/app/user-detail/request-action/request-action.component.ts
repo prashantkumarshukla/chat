@@ -11,35 +11,26 @@ import {Subject} from "rxjs";
 })
 export class RequestActionComponent implements OnInit {
   @Input() actionObj : any;
-  public friendStatus: any;
+  public userInfo: any;
   public userId : any;
   public sentRequest : any;
   destroy$: Subject<boolean> = new Subject<boolean>();
   constructor(
-    private cookieFeatureService : CookieService,
-    private socketProviderService : SocketProviderService
+    private cookieFeatureService: CookieService,
+    private socketProviderService: SocketProviderService
   ) {}
 
-  confirmRequest(friendId,action) : void {
-    let reqObj = {
-      "friendId" : friendId,
-      "userId":this.userId,
-      "action" : action
+  confirmRequest(friendId): void {
+    const reqObj = {
+      'receiverId' : friendId,
+      'senderId': this.userId,
+      'action' : 'Approved'
     };
     this.socketProviderService.confirmFriendRequest(reqObj);
   }
 
   ngOnInit() {
-    this.friendStatus = this.actionObj;
-    this.userId = {"userId" :this.cookieFeatureService.get("user")};
-    this.sentRequest = false;
-    this.socketProviderService.serverInteraction()
-      .pipe(takeUntil(this.destroy$)).subscribe(requestStatus => {
-      this.friendStatus = requestStatus;
-      console.log("Response: " + JSON.stringify(this.friendStatus));
-      if(this.friendStatus.status){
-        this.sentRequest = true;
-      }
-    });
+    this.userId = this.cookieFeatureService.get("user");
+    this.userInfo = this.actionObj;
   }
 }

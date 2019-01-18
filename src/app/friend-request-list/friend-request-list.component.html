@@ -1,5 +1,5 @@
 <app-header></app-header>
-<mat-card *ngFor="let item of friendRequest" (click)="userDetailOpenDialog(item.detail)">
+<mat-card *ngFor="let user of friendRequest" (click)="userDetailOpenDialog(user)">
 
   <mat-card-content class="user-list">
 
@@ -7,7 +7,7 @@
 
     <!--<span class='indicator' [ngClass]="{'online' : item.isOnline}"></span>-->
 
-    <span>{{item.fName}} {{item.lName}}</span>
+    <span>{{user.fName}} {{user.lName}}</span>
 
 
   </mat-card-content>

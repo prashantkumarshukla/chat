@@ -53,7 +53,7 @@ export class RegistrationFormComponent implements OnInit {
     var dob = post.month + "/" + post.day + "/" + post.year;
 
     post.birthday = dob;
-    post.id=new Date().valueOf().toString();
+    post.id=new Date().valueOf();
     post.type = "normal";
 
     delete post['month'];

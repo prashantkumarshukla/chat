@@ -17,8 +17,6 @@ var app = express();
 var server = http.createServer(app);
 var io = require('socket.io').listen(server);
 var users = {};
-var searchUserConfig = require('./server/search-user.js');
-var loginVerify = require('./server/login-validation.js');
 
 app.use(express.static(path.join(__dirname, 'dist')));
 
@@ -41,17 +39,16 @@ server.listen(app.get('port'), function() {
 io.sockets.on('connection', function(socket) {
   socket.on("login", function (userdata) {
     var userStatus = false;
-    var filterData = {email: 1};
+    var filterData = {email: userdata.userName};
     var data = {};
     var getUserId = "";
-    findQueryInDB(dbCollectionName.userProfile, filterData, function (result) {
-      var loginData = loginVerify.loginVerify(result, socket, userdata);
-      if (loginData) {
-        socket.userId = loginData.userId;
+    findQueryInDB(dbCollectionName.userProfile,  filterData, function (result) {
+      if (result[0].userPwd === userdata.userPassword) {
+        socket.userId = result[0].id;
         users[socket.userId] = socket;
-        users[socket.userId].emit("login done", loginData);
+        result[0].success = true;
+        users[socket.userId].emit("login done", result[0]);
         console.log("===========User logged in successfully=============");
-        console.log(loginData);
         console.log("===================================================");
       } else {
         console.log("===========Login Failed=============");
@@ -63,47 +60,67 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on("search-user", function (searchData) {
-    var filterData = {_id: 0};
-    console.log("Search Data:", searchData);
-    findQueryInDB(dbCollectionName.userProfile, filterData, function (response) {
-      var filteredSearch = searchUserConfig.searchUser(response,searchData, users);
+    var filterData = {$or: [{fName: searchData.searchString}, {lName: searchData.searchString}]};
+    console.log("Search Data:", JSON.stringify(filterData));
+    findQueryInDB(dbCollectionName.userProfile, filterData, function (userProfileResp) {
       var query = {$or: [{senderId: searchData.id}, {receiverId: searchData.id}]};
-      findQueryInDB(dbCollectionName.friendList, query, function (data) {
+      findQueryInDB(dbCollectionName.friendList, query, function (friendListResp) {
         //var record = isFriendExist.friendExist(data, searchData.id);
-        console.log("Friend List Table:", data);
-        console.log("Search user Record:", filteredSearch);
-        for(var i = 0; i < filteredSearch.length; i++) {
-          for(var k = 0; k < data.length; k++) {
-            if (data[k].senderId === filteredSearch[i].friendId ||
-              data[k].receiverId === filteredSearch[i].friendId) {
-              filteredSearch[i]["isFriend"] = true;
-              filteredSearch[i]["friendStatus"] = data[k].status;
+        console.log("Friend List Table:", friendListResp);
+        console.log("Search user Record:", userProfileResp);
+        for(var i = 0; i < userProfileResp.length; i++) {
+          for(var k = 0; k < friendListResp.length; k++) {
+            if (friendListResp[k].senderId === userProfileResp[i].id ||
+              friendListResp[k].receiverId === userProfileResp[i].id) {
+              console.log('entered in if conditions')
+              userProfileResp[i]["isFriend"] = true;
+              userProfileResp[i]["friendStatus"] = friendListResp[k].status;
+              break;
             } else {
-              filteredSearch[i]["isFriend"] = false;
+              userProfileResp[i]["isFriend"] = false;
             }
           }
         }
-        console.log("Updated Search Result:", filteredSearch);
-        users[searchData.id].emit('search-user-list', filteredSearch);
+        console.log('final userProfileResp:=', userProfileResp)
+        users[searchData.id].emit('search-user-list', userProfileResp);
       });
     });
   });
 
   socket.on("get-notification-list", function (request) {
-    var filterData = {receiverId: request};
-    findQueryInDB(dbCollectionName.friendList, filterData, function (response) {
-      console.log("get-notification-list:= ", response);
-      for(var i =0 ;i<response.length;i++)
-      {
-       if(response[i]){
-         var query = {id :response[i].senderId};
-         findQueryInDB(dbCollectionName.userProfile, query, function (usersData) {
-           console.log('get-user-list:=' + usersData);
-           users[request].emit('get-notifications', usersData);
-         })
+    var filterData = {$and: [{receiverId: request}, {status: 'Pending'}]};
+    console.log('filterData:='+ JSON.stringify(filterData));
+    findQueryInDB(dbCollectionName.friendList, filterData, function (friendRequestListResp) {
+      console.log("get-notification-list:= ", friendRequestListResp);
+      var senderIds = [];
+      for(var i =0 ;i<friendRequestListResp.length;i++) {
+       if(friendRequestListResp[i]){
+         senderIds.push(friendRequestListResp[i].senderId)
        }
       }
+      var query = { id: { $in: senderIds } };
+      findQueryInDB(dbCollectionName.userProfile, query, function (usersProfileResp) {
+          for(var k = 0; k < usersProfileResp.length; k++) {
+              usersProfileResp[k]["isFriend"] = true;
+              usersProfileResp[k]["friendStatus"] = 'Pending';
+          }
+        console.log('final usersProfileResp:= ', usersProfileResp);
+        users[request].emit('get-notifications', usersProfileResp);
+      })
     });
+  });
+
+
+  socket.on("confirm-friend-request", function (request) {
+
+    var query = {$and: [{receiverId: request.senderId}, {senderId: request.receiverId}]};
+    var data = { $set: {status: request.action}};
+
+    console.log('query:=', JSON.stringify(query));
+    console.log('data:=', JSON.stringify(data));
+    updateInDB(dbCollectionName.friendList, query, data, function (friendRequestResp) {
+      console.log('confirm-friend-request',friendRequestResp );
+    })
   });
 
   socket.on("sent-request", function (reqData) {
@@ -149,12 +166,11 @@ io.sockets.on('connection', function(socket) {
       } else {
         var dbo = db.db(dbName);
         dbo.collection(collectionName)
-          .find({}, data).toArray(function (err, result) {
+          .find(data).toArray(function (err, result) {
           if (err) {
             console.log('Query not executed: ' + err);
             callback(false);
           } else {
-            console.log('Query executed: ' + result.length);
             callback(result);
             db.close();
           }
@@ -184,6 +200,28 @@ io.sockets.on('connection', function(socket) {
       }
     });
   }
+
+  function updateInDB(collectionName, filter, data, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+    if (err) {
+      console.log('Database not connected: ' + err);
+      callback(false);
+    } else {
+      var dbo = db.db(dbName);
+      dbo.collection(collectionName)
+        .updateOne(filter, data, function (err, res) {
+          if (err) {
+            console.log('Data updation failed: ' + err);
+            callback(false);
+          } else {
+            console.log(res.insertedCount + ': Data updated successfully ');
+            callback(true);
+            db.close();
+          }
+        });
+    }
+  });
+    }
 
   function registerUser(req, res, next) {
 

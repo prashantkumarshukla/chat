@@ -1,4 +1,16 @@
-<div *ngIf="!friendStatus.isFriend">
+<div *ngIf="!userInfo.isFriend">
+  <div *ngIf="userInfo.gender ==='Male'; then maleBlock else femaleBlock"></div>
+  <ng-template #maleBlock>
+    <p>
+      He is not in your friend list. Send him request.
+    </p>
+  </ng-template>
+  <ng-template #femaleBlock>
+    <p>
+      She is not in your friend list. Send her request.
+    </p>
+  </ng-template>
+
   <button
     mat-raised-button
     type="button"

@@ -1,8 +1,9 @@
-<div *ngIf="friendStatus.friendStatus === 'pending'">
-  <p>{{friendStatus.name}} has sent you the Friend Request.</p>
+<p>Please Accept or reject the friend request</p>
+
+<div *ngIf="userInfo.friendStatus === 'Pending'">
   <button
     mat-raised-button
-    (click)="confirmRequest(friendStatus.friendId,'accept')"
+    (click)="confirmRequest(userInfo.id)"
     type="button">
     CONFIRM
   </button>
