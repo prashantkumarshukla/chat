@@ -16,10 +16,10 @@ mongoClient.connect(mongoUrl, function (err,db) {
   } else {
 
     var dbo = db.db('chatdb');
+    var query = {$or: [{'fName': 'Astha'}, {'lName': 'Astha'}]};
 
     dbo.collection('userProfile')
-      .find({},{"email":"shivani.sharma@gmail.com"}
-      ).toArray(function(err, result) {
+      .find(query).toArray(function(err, result) {
 
       if(err) {
 

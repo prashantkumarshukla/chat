@@ -1,10 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { MatTabGroup } from "@angular/material";
 import { HttpServiceService } from "../http-service.service";
-import { UserDetailComponent } from "../user-detail/user-detail.component";
-import { MatDialog } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../services/socket-provider.service";
+import {takeUntil} from "rxjs/operators";
+import {Subject} from "rxjs";
 
 @Component({
   selector: 'app-friend-list',
@@ -15,94 +15,29 @@ import { SocketProviderService } from "../services/socket-provider.service";
 export class FriendListComponent implements OnInit {
 
   @Input() getMessage : any;
+  public userId : string;
+  public friendList : any;
+  public getResponse : any;
+  destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
-
-    private httpService : HttpServiceService,
-
-    private cookieFeatureService : CookieService,
-
-    private socketProviderService: SocketProviderService,
-
-    public dialog: MatDialog
-
+    private cookieService: CookieService,
+    private socketProviderService: SocketProviderService
   ) { }
 
-
-
-  public userId : any;
-
-  public friendList : any;
-
-  public getResponse : any;
-
-  public checkResponse : any;
-
-  retrieveFriendList() : void {
-
-    this.userId = {"userId" :this.cookieFeatureService.get("user")};
-
-    let newList = new Promise((resolve, reject) => {
-
-      this.httpService.friendList(this.userId).subscribe(
-
-        res => {
-
-          //this.friendList = res.friendList;
-
-          console.log("Friend List:", this.friendList);
-
-        }
-
-      );
-
-    });
-
+  public retrieveFriendList(): void {
+    this.socketProviderService.getFriendList(this.userId);
   }
 
-  getFriendList() : void {
-
-    let userId = this.cookieFeatureService.get("user");
-
-    this.socketProviderService.getFriendList(userId);
-
-  }
-
-  userDetailOpenDialog(userInfo) : void {
-
-    console.log("User Detail", userInfo);
-
-    //let allDetails = {"chat" : this.getMessage,"userDetail" : userInfo}
-
-    let dialogRef = this.dialog.open(UserDetailComponent, {
-
-      width: '87%',
-
-      data: userInfo
-
-    });
-
-  }
 
   ngOnInit() {
-
-    //this.retrieveFriendList();
-
-    this.getFriendList();
-
-    this.socketProviderService.serverInteraction().subscribe(list => {
-
-      this.checkResponse = list;
-
-      if(this.checkResponse.friends){
-
-        this.getResponse = this.checkResponse.friends;
-
-        console.log("Friend List", this.getResponse);
-
-      }
-
-    });
-
+    this.userId = this.cookieService.get("user");
+    this.retrieveFriendList();
+    this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(friendList => {
+        this.friendList = friendList;
+        console.log('Friend list is: ' + JSON.stringify(this.friendList));
+      });
   }
 }

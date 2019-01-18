@@ -64,20 +64,12 @@ export class SocketProviderService {
       this.socket.on('new message', (chats) => {
         observer.next(chats);
       });
-      this.socket.on('friend-list-sent', (friendList) => {
+      this.socket.on('get-friend-list', (friendList) => {
         observer.next(friendList);
       });
       this.socket.on('user-is-typing', (typing) => {
         console.log('Typing', typing);
         observer.next(typing);
-      });
-      this.socket.on('friend-request-status', (requestStatus) => {
-        console.log('Friend Request Status: ' + requestStatus);
-        observer.next(requestStatus);
-      });
-      this.socket.on('friend-request-update', (friendRequestUpdate) => {
-        console.log('Friend Request Update: ' + friendRequestUpdate);
-        observer.next(friendRequestUpdate);
       });
       this.socket.on('search-user-list', (searchList) => {
         console.log('Search User: ' + searchList);
