@@ -23,7 +23,7 @@ export class FriendRequestListComponent implements OnInit {
               private router: Router
   ) { }
 
-  public friendRequest :any;
+  public friendRequest: any;
 
   public userId: string;
 
@@ -39,7 +39,7 @@ export class FriendRequestListComponent implements OnInit {
     this.userId = this.cookieService.get("user");
     this.retrieveFriendList();
 
-    this.searchSubscription = this.socketProviderService.serverInteraction()
+    this.socketProviderService.serverInteraction()
       .pipe(takeUntil(this.destroy$))
       .subscribe(searchList => {
         this.friendRequest = searchList;

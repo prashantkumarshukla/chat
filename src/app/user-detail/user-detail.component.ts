@@ -14,7 +14,7 @@ import { StateStoreService } from "../services/state-store.service";
   ]
 })
 
-export class UserDetailComponent implements OnInit,OnDestroy {
+export class UserDetailComponent implements OnInit, OnDestroy {
 
   messageForm: FormGroup;
   public userInfo : any;

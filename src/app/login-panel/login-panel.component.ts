@@ -24,7 +24,7 @@ import {takeUntil} from "rxjs/operators";
     MatTab
   ]
 })
-export class LoginPanelComponent implements OnInit,OnDestroy {
+export class LoginPanelComponent implements OnInit {
 
   modalId = 'hoplaModal';
   dialogResult = "";
@@ -158,8 +158,8 @@ export class LoginPanelComponent implements OnInit,OnDestroy {
         }
     });
   }
-  ngOnDestroy(){
-    //this.unsubscribe$.next(true);
-    //this.loginSubscription.unsubscribe();
-  }
+ /* ngOnDestroy() {
+    this.unsubscribe$.next(true);
+    this.loginSubscription.unsubscribe();
+  }*/
 }

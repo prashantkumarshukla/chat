@@ -40,6 +40,10 @@ export class SocketProviderService {
     this.socket.emit('confirm-friend-request', data);
   }
 
+  public denyFriendRequest(data): void {
+    this.socket.emit('deny-friend-request', data);
+  }
+
   public searchUser(data): void {
     this.socket.emit('search-user', data);
   }
@@ -82,9 +86,9 @@ export class SocketProviderService {
       this.socket.on('confirm-request', (data) => {
         observer.next(data);
       });
-      return () => {
-        this.socket.disconnect();
-      };
+      this.socket.on('deny-request', (data) => {
+        observer.next(data);
+      });
     });
     return observable;
   }

@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, OnDestroy} from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../../services/socket-provider.service";
 import {takeUntil} from "rxjs/operators";
@@ -11,7 +11,7 @@ import { Router } from '@angular/router';
   templateUrl: './request-action.component.html',
   styleUrls: ['./request-action.component.scss']
 })
-export class RequestActionComponent implements OnInit {
+export class RequestActionComponent implements OnInit , OnDestroy {
   @Input() actionObj: any;
   public userInfo: any;
   public userId: any;
@@ -33,16 +33,34 @@ export class RequestActionComponent implements OnInit {
       'action' : 'Approved'
     };
     this.socketProviderService.confirmFriendRequest(reqObj);
+    this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(response => {
+        this.confirmRequestResp = response;
+      });
+  }
+
+  denyRequest(friendId): void {
+    const reqObj = {
+      'receiverId' : friendId,
+      'senderId': this.userId,
+      'action' : 'Rejected'
+    };
+    this.socketProviderService.denyFriendRequest(reqObj);
+    this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(response => {
+        this.confirmRequestResp = response;
+      });
   }
 
   ngOnInit() {
     this.userId = this.cookieFeatureService.get('user');
     this.userInfo = this.actionObj;
-    this.confirmRequestsSubscription = this.socketProviderService.serverInteraction()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(response => {
-        this.confirmRequestResp = response;
-        this.router.navigate(['/notifications']);
-      });
+    this.confirmRequestResp = false;
   }
+
+  ngOnDestroy() {
+   this.destroy$.next(true);
+ }
 }

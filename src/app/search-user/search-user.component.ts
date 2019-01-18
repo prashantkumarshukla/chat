@@ -45,6 +45,13 @@ export class SearchUserComponent implements OnInit, OnDestroy {
       'searchString': searchString.searchField
     };
     this.socketProviderService.searchUser(searchObj);
+
+    this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(searchList => {
+        this.searchResponse = searchList;
+        console.log('Search list is: ' + JSON.stringify(this.searchResponse));
+      });
   }
 
   userDetail(userInfo) {
@@ -55,16 +62,9 @@ export class SearchUserComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.userId = this.cookieFeatureService.get("user");
-    this.searchSubscription = this.socketProviderService.serverInteraction()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(searchList => {
-        this.searchResponse = searchList;
-        console.log('Search list is: ' + JSON.stringify(this.searchResponse));
-    });
   }
 
   ngOnDestroy() {
-    //this.destroy$.next(true);
-    //this.searchSubscription.unsubscribe();
+   /* this.destroy$.next(true);*/
   }
 }
