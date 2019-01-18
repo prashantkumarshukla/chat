@@ -87,6 +87,9 @@ export class SocketProviderService {
         console.log('friend Request: ' + friendRequestList);
         observer.next(friendRequestList);
       });
+      this.socket.on('confirm-request', (data) => {
+        observer.next(data);
+      });
       return () => {
         this.socket.disconnect();
       };

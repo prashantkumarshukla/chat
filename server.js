@@ -119,7 +119,10 @@ io.sockets.on('connection', function(socket) {
     console.log('query:=', JSON.stringify(query));
     console.log('data:=', JSON.stringify(data));
     updateInDB(dbCollectionName.friendList, query, data, function (friendRequestResp) {
-      console.log('confirm-friend-request',friendRequestResp );
+      console.log('confirm-friend-request:=',request.receiverId );
+      console.log('users:=',users);
+      var resp = {'requestConfirmed' : true};
+      users[request.senderId].emit('confirm-request', resp);
     })
   });
 
