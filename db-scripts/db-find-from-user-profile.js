@@ -19,7 +19,7 @@ mongoClient.connect(mongoUrl, function (err,db) {
     var query = {$or: [{'fName': 'Astha'}, {'lName': 'Astha'}]};
 
     dbo.collection('userProfile')
-      .find(query).toArray(function(err, result) {
+      .find({},query).toArray(function(err, result) {
 
       if(err) {
 

@@ -60,17 +60,22 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on("friend-list", function (request) {
-    var filterData = {$and: [{receiverId: request}, {status: 'Approved'}]};
+    var filterData = {$and: [
+        {$or: [{receiverId: request}, {senderId: request}]},
+        {status: 'Approved'}
+        ]};
     console.log('filterData:='+ JSON.stringify(filterData));
     findQueryInDB(dbCollectionName.friendList, filterData, function (friendRequestListResp) {
       console.log("get-notification-list:= ", friendRequestListResp);
-      var senderIds = [];
+      var Ids = [];
       for(var i =0 ;i<friendRequestListResp.length;i++) {
-        if(friendRequestListResp[i]){
-          senderIds.push(friendRequestListResp[i].senderId)
-        }
+            if(friendRequestListResp[i].senderId!==request)
+              Ids.push(friendRequestListResp[i].senderId)
+
+            if(friendRequestListResp[i].receiverId!==request)
+              Ids.push(friendRequestListResp[i].receiverId)
       }
-      var query = { id: { $in: senderIds } };
+      var query = { id: { $in: Ids } };
       findQueryInDB(dbCollectionName.userProfile, query, function (usersProfileResp) {
         for(var k = 0; k < usersProfileResp.length; k++) {
           usersProfileResp[k]["isFriend"] = true;
