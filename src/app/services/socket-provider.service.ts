@@ -49,7 +49,7 @@ export class SocketProviderService {
   }
 
   public sendMessage(data): void {
-    this.socket.emit('chating', data);
+    this.socket.emit('send-message', data);
   }
 
   public getFriendList(id): void {
@@ -90,6 +90,9 @@ export class SocketProviderService {
         observer.next(data);
       });
       this.socket.on('friend-request-status', (data) => {
+        observer.next(data);
+      });
+      this.socket.on('receive-message', (data) => {
         observer.next(data);
       });
     });

@@ -80,6 +80,7 @@ io.sockets.on('connection', function(socket) {
         for(var k = 0; k < usersProfileResp.length; k++) {
           usersProfileResp[k]["isFriend"] = true;
           usersProfileResp[k]["friendStatus"] = 'Approved';
+          usersProfileResp[k]["isOnline"] = users[usersProfileResp[k].id] ? true  :false ;
         }
         console.log('final usersProfileResp:= ', usersProfileResp);
         users[request].emit('get-friend-list', usersProfileResp);
@@ -103,6 +104,7 @@ io.sockets.on('connection', function(socket) {
               console.log('entered in if conditions');
               userProfileResp[i]["isFriend"] = true;
               userProfileResp[i]["friendStatus"] = friendListResp[k].status;
+              usersProfileResp[i]["isOnline"] = users[usersProfileResp[i].id] ? true  :false ;
               break;
             } else {
               userProfileResp[i]["isFriend"] = false;
@@ -131,6 +133,7 @@ io.sockets.on('connection', function(socket) {
           for(var k = 0; k < usersProfileResp.length; k++) {
               usersProfileResp[k]["isFriend"] = true;
               usersProfileResp[k]["friendStatus"] = 'Pending';
+              usersProfileResp[k]["isOnline"] = users[usersProfileResp[k].id] ? true  :false ;
           }
         console.log('final usersProfileResp:= ', usersProfileResp);
         users[request].emit('get-notifications', usersProfileResp);
@@ -180,7 +183,15 @@ io.sockets.on('connection', function(socket) {
       console.log('Friend request status:', successResponse);
     });
   });
+
+  socket.on('send-message', function (request) {
+    console.log('request:', request);
+
+    users[request.receiverId].emit('receive-message', request.message);
+  });
 });
+
+
 
   var bodyParser = require('body-parser');
 

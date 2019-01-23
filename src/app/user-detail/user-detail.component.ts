@@ -4,31 +4,30 @@ import { CookieService } from "ngx-cookie-service";
 import { FormBuilder, FormGroup } from "@angular/forms";
 import { SocketProviderService } from "../services/socket-provider.service";
 import { StateStoreService } from "../services/state-store.service";
+import {takeUntil} from 'rxjs/operators';
+import {Subject} from 'rxjs/index';
 
 @Component({
   selector: 'app-user-detail',
   templateUrl: './user-detail.component.html',
   styleUrls: ['./user-detail.component.scss'],
-  providers : [
-    HttpServiceService
-  ]
 })
 
 export class UserDetailComponent implements OnInit, OnDestroy {
 
   messageForm: FormGroup;
-  public userInfo : any;
-  public conversations : any;
-  public typeResponse : any;
-  public btnActionData : any;
-  private getUserId : any;
+  public userInfo: any;
+  public conversations: any;
+  public typeResponse: any;
+  public btnActionData: any;
+  public messages: any =  [];
+  destroy$: Subject<boolean> = new Subject<boolean>();
 
-  @Input() userDetail : any;
+  @Input() userDetail: any;
 
     constructor(
-    private formBuilder : FormBuilder,
+    private formBuilder: FormBuilder,
     private stateStore: StateStoreService,
-    public httpService: HttpServiceService,
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService
   ) {
@@ -37,38 +36,27 @@ export class UserDetailComponent implements OnInit, OnDestroy {
     });
   }
 
-  /*confirmRequest(friendId,action) : void {
 
-    let post = {"friendId" : friendId,"userId":this.cookieFeatureService.get("user"),"action" : action};
-
-    let sendRequest = new Promise((resolve, reject) => {
-
-      this.httpService.requestAction(post).toPromise().then(
-
-        res => {
-
-          this.isFriend = res.status;
-
-          console.log("Response:", res);
-
-        }
-
-      );
-
-    });
-
-  }*/
-/*
-  sendMessage(getMsg) : void {
-    let messagePost = {
-      "toSocketId" : this.userInfo.id,
-      "fromSocketId":this.cookieFeatureService.get("user"),
-      "fromName" : this.userInfo.name,
-      "message" : getMsg.chatMessage
+  sendMessage(MsgForm): void {
+    const messagePost = {
+      'senderId' : this.cookieFeatureService.get('user'),
+      'receiverId' : this.userInfo.id,
+      'message' : MsgForm.chatMessage
     };
     this.messageForm.reset();
     this.socketProviderService.sendMessage(messagePost);
-  }*/
+    this.socketProviderService.serverInteraction()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(response => {
+        const message: any = {'me' : messagePost.message, 'friend' : response };
+        let messageArray, friendArray: any =  [];
+        messageArray.push(message);
+        const receiverId: string = this.userInfo.id;
+        const a: any = {receiverId : messageArray};
+        friendArray.push(a);
+        this.messages = {'messages' : friendArray};
+      });
+  }
 
 /*
   userTyping(typingStatus) : void {
@@ -81,10 +69,9 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.userInfo = this.stateStore.userInfo;
-    console.log("Data from parent", this.userInfo);
-    this.getUserId = this.cookieFeatureService.get("user");
   }
 
-  ngOnDestroy(){}
-
+  ngOnDestroy() {
+    this.destroy$.next(true);
+  }
 }
