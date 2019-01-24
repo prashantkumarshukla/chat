@@ -30,18 +30,13 @@
       <app-request-action [actionObj]="userInfo"></app-request-action>
       <hr />
       <div class="chat-pane">
-        <div class="message-section"
-             *ngIf="conversations !== undefined">
-          <div *ngFor="let item of conversations">
-            <div class="sent"
-                 *ngIf="item.requestType=='sent'">
-              <p>{{item.message}}</p>
+        <div *ngFor="let chat of conversations.conversations">
+            <div class="sent">
+            <b>  Me:</b> <p>{{chat.me}}</p>
             </div>
-            <div class="received"
-                 *ngIf="item.requestType=='recieved'">
-              <p>{{item.message}}</p>
+            <div class="received">
+             <b> {{userInfo.fName}}:</b> <p>{{chat.friend}}</p>
             </div>
-          </div>
         </div>
       </div>
       <div class="send-message-pane">
@@ -54,8 +49,7 @@
           <input class="form-control type-pane"
                  type="text"
                  formControlName="chatMessage"
-                 (keyup)="userTyping('none')"
-                 (keydown)="userTyping('typing')"/>
+                />
           <button mat-raised-button
                   type="submit"
                   class="send-message">

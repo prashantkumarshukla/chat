@@ -1,4 +1,21 @@
 <app-header></app-header>
 
+<mat-card *ngFor="let user of chatArray" (click)="userDetailOpenDialog(user)">
 
-HI This is chat window
+  <mat-card-content class="user-list">
+
+    <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
+
+    <span class='indicator' [ngClass]="{'online' : user.isOnline}"></span>
+
+    <span>{{user.fName}} {{user.lName}}</span>
+
+    <span>{{user.message}}</span>
+
+  </mat-card-content>
+
+</mat-card>
+
+<div *ngIf="showSpinner">
+  <mat-progress-spinner  mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
+</div>

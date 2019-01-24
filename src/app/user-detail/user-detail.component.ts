@@ -17,10 +17,10 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 
   messageForm: FormGroup;
   public userInfo: any;
-  public conversations: any;
   public typeResponse: any;
   public btnActionData: any;
-  public messages: any =  [];
+  public conversations: any =  [];
+  public messageArray: any =  [];
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   @Input() userDetail: any;
@@ -49,12 +49,8 @@ export class UserDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
         const message: any = {'me' : messagePost.message, 'friend' : response };
-        let messageArray, friendArray: any =  [];
-        messageArray.push(message);
-        const receiverId: string = this.userInfo.id;
-        const a: any = {receiverId : messageArray};
-        friendArray.push(a);
-        this.messages = {'messages' : friendArray};
+        this.messageArray.push(message);
+        this.conversations = {'conversations' : this.messageArray};
       });
   }
 

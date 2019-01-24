@@ -6,7 +6,8 @@ var mongoUrl = 'mongodb://localhost:27017/';
 var dbName = 'chatdb';
 var dbCollectionName = {
   'userProfile' : 'userProfile',
-  'friendList' : 'friendList'
+  'friendList' : 'friendList',
+  'conversations' : 'conversations'
 };
 
 var path = require('path');
@@ -186,12 +187,22 @@ io.sockets.on('connection', function(socket) {
 
   socket.on('send-message', function (request) {
     console.log('request:', request);
-
-    users[request.receiverId].emit('receive-message', request.message);
+    var query = {id: request.senderId};
+    findQueryInDB(dbCollectionName.userProfile, query , function (senderData) {
+      const isOnline  = users[request.receiverId] ? true :false;
+      insertInDB(dbCollectionName.conversations, request, function () {
+        if(isOnline) {
+          senderData[0]["isFriend"] = true;
+          senderData[0]["friendStatus"] = 'Approved';
+          senderData[0]['isOnline'] = true;
+          senderData[0]['message'] = request.message;
+          console.log('send-message get data:=', senderData)
+          users[request.receiverId].emit('receive-message', senderData);
+        }
+      })
+    });
   });
 });
-
-
 
   var bodyParser = require('body-parser');
 
