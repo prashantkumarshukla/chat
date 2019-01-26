@@ -16,7 +16,7 @@ import {Subject} from 'rxjs/index';
 export class UserDetailComponent implements OnInit, OnDestroy {
 
   messageForm: FormGroup;
-  public userInfo: any;
+  public friendInfo: any;
   public typeResponse: any;
   public btnActionData: any;
   public conversations: any =  [];
@@ -39,8 +39,8 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 
   sendMessage(MsgForm): void {
     const messagePost = {
-      'senderId' : this.cookieFeatureService.get('user'),
-      'receiverId' : this.userInfo.id,
+      'senderId' : this.stateStore.loggedInUser.id,
+      'receiverId' : this.friendInfo.id,
       'message' : MsgForm.chatMessage
     };
     this.messageForm.reset();
@@ -55,7 +55,8 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   }
 
 /*
-  userTyping(typingStatus) : void {
+  userTyping(typingStatus) : void
+  {
     let userId = this.getUserId;
     let friendId = this.userInfo.friendId;
     let sendData = { "userId" : userId, "friendId" : friendId, "typing" : typingStatus };
@@ -64,7 +65,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 */
 
   ngOnInit() {
-    this.userInfo = this.stateStore.userInfo;
+    this.friendInfo = this.stateStore.friendDetails;
   }
 
   ngOnDestroy() {

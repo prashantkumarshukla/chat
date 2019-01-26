@@ -26,7 +26,6 @@ export class MessageBoxComponent implements OnInit, OnDestroy {
   public chatDetail: any;
   public getServerResponse: any;
   public searchBegin: boolean;
-  public userInfo: any;
   destroy$: Subject<boolean> = new Subject<boolean>();
   public conversations: any =  [];
   public messageArray: any =  [];
@@ -42,12 +41,12 @@ export class MessageBoxComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.userInfo = this.stateStoreService.userInfo;
     this.socketProviderService.serverInteraction()
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
-        this.chatArray = response;
-
+        if (response) {
+            this.chatArray.push(response[0]);
+        }
       });
   }
 
@@ -56,8 +55,8 @@ export class MessageBoxComponent implements OnInit, OnDestroy {
   }
 
 
-  userDetailOpenDialog(user: any) {
-    this.stateStoreService.userInfo = user;
+  userDetailOpenDialog(friend: any) {
+    this.stateStoreService.friendDetails = friend;
     this.router.navigate(['/user']);
   }
 }

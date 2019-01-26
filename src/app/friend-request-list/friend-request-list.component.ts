@@ -38,7 +38,7 @@ export class FriendRequestListComponent implements OnInit {
 
 
   ngOnInit() {
-    this.userId = this.cookieService.get("user");
+    this.userId = this.stateStoreService.loggedInUser.id;
     this.retrieveFriendList();
 
     this.socketProviderService.serverInteraction()
@@ -50,9 +50,8 @@ export class FriendRequestListComponent implements OnInit {
       });
   }
 
-  userDetailOpenDialog(user: any) {
-    console.log('User Detail', user);
-    this.stateStoreService.userInfo = user;
+  userDetailOpenDialog(friend: any) {
+    this.stateStoreService.friendDetails = friend;
     this.router.navigate(['/user']);
   }
 }

@@ -13,6 +13,7 @@ import { SocketProviderService } from "../services/socket-provider.service";
 import {Subscription} from "rxjs";
 import {Subject} from "rxjs";
 import {takeUntil} from "rxjs/operators";
+import { StateStoreService} from '../services/state-store.service';
 
 @Component({
   selector: 'app-login-panel',
@@ -43,14 +44,15 @@ export class LoginPanelComponent implements OnInit {
 
   constructor(
     public modalService: ModalService,
-    private fb : FacebookService,
-    private formBuilder : FormBuilder,
-    private loginFormBuilder : FormBuilder,
-    private createUserService : CreateUserService,
-    private router : Router,
+    private fb: FacebookService,
+    private formBuilder: FormBuilder,
+    private loginFormBuilder: FormBuilder,
+    private createUserService: CreateUserService,
+    private router: Router,
     public dialog: MatDialog,
-    private cookieFeatureService : CookieService,
-    private socketProviderService : SocketProviderService
+    private cookieFeatureService: CookieService,
+    private socketProviderService: SocketProviderService,
+    private stateStoreService: StateStoreService
   ) {
 
     //login form initiate
@@ -150,10 +152,11 @@ export class LoginPanelComponent implements OnInit {
     this.loginSubscription = this.socketProviderService.serverInteraction()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(status => {
-        console.log("Status is:", status);
+        console.log('Status is:', status);
         this.statusResponse = status;
         if (this.statusResponse.success) {
-          this.cookieFeatureService.set("user",this.statusResponse.id);
+          this.cookieFeatureService.set('user', this.statusResponse.id);
+          this.stateStoreService.loggedInUser = this.statusResponse;
           this.router.navigate(['/chat']);
         }
     });

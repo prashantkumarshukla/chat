@@ -19,19 +19,19 @@ import {takeUntil} from "rxjs/operators";
 })
 export class SearchUserComponent implements OnInit, OnDestroy {
 
-  searchform : FormGroup;
+  searchform: FormGroup;
   public searchResponse: any;
-  private searchSubscription : Subscription;
-  private userId : any;
+  private searchSubscription: Subscription;
+  private userId: any;
   destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
-    private formBuilder : FormBuilder,
-    private httpService : HttpServiceService,
-    private userSearchService : UserSearchService,
+    private formBuilder: FormBuilder,
+    private httpService: HttpServiceService,
+    private userSearchService: UserSearchService,
     private socketProviderService: SocketProviderService,
     private stateStoreService: StateStoreService,
-    private cookieFeatureService : CookieService,
+    private cookieFeatureService: CookieService,
     private router: Router
   ) {
     this.searchform = formBuilder.group({
@@ -39,9 +39,9 @@ export class SearchUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  searchUser(searchString) : void {
-    let searchObj = {
-      'id':this.userId,
+  searchUser(searchString): void {
+    const searchObj = {
+      'id': this.userId,
       'searchString': searchString.searchField
     };
     this.socketProviderService.searchUser(searchObj);
@@ -54,14 +54,13 @@ export class SearchUserComponent implements OnInit, OnDestroy {
       });
   }
 
-  userDetail(userInfo) {
-    console.log("User Detail", userInfo);
-    this.stateStoreService.userInfo = userInfo;
+  userDetail(friendInfo) {
+    this.stateStoreService.friendDetails = friendInfo;
     this.router.navigate(['/user']);
   }
 
   ngOnInit() {
-    this.userId = this.cookieFeatureService.get("user");
+    this.userId = this.stateStoreService.loggedInUser.id;
   }
 
   ngOnDestroy() {

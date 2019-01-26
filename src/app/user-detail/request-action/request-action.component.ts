@@ -5,6 +5,7 @@ import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import {Subscription} from 'rxjs/index';
 import { Router } from '@angular/router';
+import {StateStoreService} from '../../services/state-store.service';
 
 @Component({
   selector: 'app-request-action',
@@ -13,8 +14,7 @@ import { Router } from '@angular/router';
 })
 export class RequestActionComponent implements OnInit , OnDestroy {
   @Input() actionObj: any;
-  public userInfo: any;
-  public userId: any;
+  public friendInfo: any;
   public sentRequest: any;
   public confirmRequestResp: any;
   destroy$: Subject<boolean> = new Subject<boolean>();
@@ -23,15 +23,16 @@ export class RequestActionComponent implements OnInit , OnDestroy {
   constructor(
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService,
-    private router: Router
+    private router: Router,
+    private stateStoreService: StateStoreService
   ) {
   }
 
-  confirmRequest(friendId): void {
+  confirmRequest(): void {
     this.showSpinner = true;
     const reqObj = {
-      'receiverId' : friendId,
-      'senderId': this.userId,
+      'receiverId' : this.friendInfo.id,
+      'senderId': this.stateStoreService.loggedInUser.id,
       'action' : 'Approved'
     };
     this.socketProviderService.confirmFriendRequest(reqObj);
@@ -43,11 +44,11 @@ export class RequestActionComponent implements OnInit , OnDestroy {
       });
   }
 
-  denyRequest(friendId): void {
+  denyRequest(): void {
     this.showSpinner = true;
     const reqObj = {
-      'receiverId' : friendId,
-      'senderId': this.userId,
+      'receiverId' : this.friendInfo.id,
+      'senderId': this.stateStoreService.loggedInUser.id,
       'action' : 'Rejected'
     };
     this.socketProviderService.denyFriendRequest(reqObj);
@@ -60,8 +61,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
   }
 
   ngOnInit() {
-    this.userId = this.cookieFeatureService.get('user');
-    this.userInfo = this.actionObj;
+    this.friendInfo = this.actionObj;
     this.confirmRequestResp = false;
     this.showSpinner = false;
   }

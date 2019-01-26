@@ -3,6 +3,7 @@ import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../../../services/socket-provider.service";
 import {takeUntil} from "rxjs/operators";
 import {Subject, Subscription} from 'rxjs';
+import {StateStoreService} from '../../../services/state-store.service';
 
 
 @Component({
@@ -12,10 +13,9 @@ import {Subject, Subscription} from 'rxjs';
 })
 export class AddFriendComponent implements OnInit, OnDestroy{
 
-  @Input() actionObj : any;
-  public userInfo: any;
-  public userId : any;
-  public sentRequest : boolean;
+  @Input() actionObj: any;
+  public friendInfo: any;
+  public sentRequest: boolean;
   destroy$: Subject<boolean> = new Subject<boolean>();
   public friendRequestStatus: Subscription;
   public ApiResp: any;
@@ -23,24 +23,23 @@ export class AddFriendComponent implements OnInit, OnDestroy{
 
   constructor(
     private cookieFeatureService: CookieService,
-    private socketProviderService: SocketProviderService
+    private socketProviderService: SocketProviderService,
+    private stateStoreService: StateStoreService
 
   ) { }
 
   ngOnInit() {
 
-    this.userInfo = this.actionObj;
+    this.friendInfo = this.actionObj;
     this.sentRequest = false;
     this.showSpinner = false;
-
   }
 
-  sendFriendRequest(receiverId): void {
+  sendFriendRequest(): void {
     this.showSpinner = true;
-    let senderId = this.cookieFeatureService.get("user");
-    let reqObj = {
-      'senderId': senderId,
-      'receiverId': receiverId,
+    const reqObj = {
+      'senderId': this.stateStoreService.loggedInUser.id,
+      'receiverId': this.friendInfo.id,
       'status': 'Pending'
     };
     this.socketProviderService.sendFriendRequest(reqObj);

@@ -1,5 +1,5 @@
-<div *ngIf="!userInfo.isFriend && !sentRequest">
-  <div *ngIf="userInfo.gender ==='Male'; then maleBlock else femaleBlock"></div>
+<div *ngIf="!friendInfo.isFriend && !sentRequest">
+  <div *ngIf="friendInfo.gender ==='Male'; then maleBlock else femaleBlock"></div>
   <ng-template #maleBlock>
     <p>
       He is not in your friend list. Send him request.
@@ -14,7 +14,7 @@
   <button
     mat-raised-button
     type="button"
-    (click)="sendFriendRequest(userInfo.id)">
+    (click)="sendFriendRequest()">
     ADD ON MESSENGER
   </button>
 </div>

@@ -6,10 +6,10 @@
            class="header-image">
       </div>
       <mat-card-title>
-        {{userInfo.fName}} {{userInfo.lName}}
+        {{friendInfo.fName}} {{friendInfo.lName}}
       </mat-card-title>
       <p></p>
-      <mat-card-subtitle *ngIf="userInfo.isOnline; then onlineBlock else offLineBlock">
+      <mat-card-subtitle *ngIf="friendInfo.isOnline; then onlineBlock else offLineBlock">
       </mat-card-subtitle>
       <ng-template #onlineBlock>
         <span class="user-indicator online"></span>
@@ -26,8 +26,8 @@
     </mat-card-header>
     <mat-card-content>
 
-      <app-add-friend [actionObj]="userInfo"></app-add-friend>
-      <app-request-action [actionObj]="userInfo"></app-request-action>
+      <app-add-friend [actionObj]="friendInfo"></app-add-friend>
+      <app-request-action [actionObj]="friendInfo"></app-request-action>
       <hr />
       <div class="chat-pane">
         <div *ngFor="let chat of conversations.conversations">
@@ -35,7 +35,7 @@
             <b>  Me:</b> <p>{{chat.me}}</p>
             </div>
             <div class="received">
-             <b> {{userInfo.fName}}:</b> <p>{{chat.friend}}</p>
+             <b> {{friendInfo.fName}}:</b> <p>{{chat.friend}}</p>
             </div>
         </div>
       </div>

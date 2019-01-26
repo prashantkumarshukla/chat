@@ -1,16 +1,16 @@
 
-<div *ngIf="userInfo.friendStatus === 'Pending' && !confirmRequestResp">
+<div *ngIf="friendInfo.friendStatus === 'Pending' && !confirmRequestResp">
   <p>Please Accept or reject the friend request</p>
 
   <button
     mat-raised-button
-    (click)="confirmRequest(userInfo.id)"
+    (click)="confirmRequest()"
     type="button">
     CONFIRM
   </button>
   <button
     mat-raised-button
-    (click)="denyRequest(userInfo.id)"
+    (click)="denyRequest()"
     type="button">
     Deny
   </button>

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {MatTab, MatTabChangeEvent} from '@angular/material';
 import {MatTabGroup} from "@angular/material";
 import {Router} from "@angular/router";
-import { HttpServiceService } from "../http-service.service";
+import { StateStoreService} from '../services/state-store.service';
 
 @Component({
   selector: 'app-header',
@@ -10,16 +10,18 @@ import { HttpServiceService } from "../http-service.service";
   styleUrls: ['./header.component.scss'],
   providers: [
     MatTabGroup,
-    MatTab,
-    HttpServiceService
+    MatTab
   ]
 })
 export class HeaderComponent implements OnInit {
 
+  public loggedInUser: any;
+
   constructor(
-    private router: Router
+    private router: Router,
+    private stateStoreSrvice: StateStoreService
   ) {}
-  public tabNavigation(event: MatTabChangeEvent) {
+  public tabNavigation(event : MatTabChangeEvent) {
     switch (event.tab.textLabel) {
         case  'friendList':
           this.router.navigate(['/friendList']);
@@ -38,6 +40,6 @@ export class HeaderComponent implements OnInit {
 
 
   ngOnInit() {
+    this.loggedInUser = this.stateStoreSrvice.loggedInUser;
   }
-
 }

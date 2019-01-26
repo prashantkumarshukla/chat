@@ -1,5 +1,8 @@
 <mat-toolbar color="primary">
-  <span>WebChat</span>
+
+  <span>Welcome  {{loggedInUser.fName}}</span>
+
+
   <span class="spacer"></span>
   <button mat-icon-button [matMenuTriggerFor]="menu">
     <mat-icon>more_vert</mat-icon>
@@ -39,8 +42,9 @@
     <ng-template mat-tab-label>
       <i class="material-icons">supervisor_account</i>
       <span class="counter">
-        <app-friend-list-counter></app-friend-list-counter>
+
       </span>
     </ng-template>
   </mat-tab>
+
 </mat-tab-group>

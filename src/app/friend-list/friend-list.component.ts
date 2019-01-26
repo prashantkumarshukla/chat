@@ -17,10 +17,8 @@ import { StateStoreService } from "../services/state-store.service";
 })
 export class FriendListComponent implements OnInit, OnDestroy {
 
-  @Input() getMessage : any;
-  public userId : string;
-  public friendList : any;
-  public getResponse : any;
+  public friendList: any;
+  public getResponse: any;
   destroy$: Subject<boolean> = new Subject<boolean>();
   private showSpinner: boolean;
 
@@ -33,7 +31,7 @@ export class FriendListComponent implements OnInit, OnDestroy {
 
   public retrieveFriendList(): void {
     this.showSpinner = true;
-    this.socketProviderService.getFriendList(this.userId);
+    this.socketProviderService.getFriendList(this.stateStoreService.loggedInUser.id);
     this.socketProviderService.serverInteraction()
       .pipe(takeUntil(this.destroy$))
       .subscribe(friendList => {
@@ -45,7 +43,6 @@ export class FriendListComponent implements OnInit, OnDestroy {
 
 
   ngOnInit() {
-    this.userId = this.cookieService.get('user');
     this.retrieveFriendList();
   }
 
@@ -53,8 +50,8 @@ export class FriendListComponent implements OnInit, OnDestroy {
     this.destroy$.next(true );
   }
 
-  userDetailOpenDialog(user: any) {
-    this.stateStoreService.userInfo = user;
+  userDetailOpenDialog(friend: any) {
+    this.stateStoreService.friendDetails = friend;
     this.router.navigate(['/user']);
   }
 }
