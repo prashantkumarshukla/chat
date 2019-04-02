@@ -37,7 +37,7 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   }
 
 
-  sendMessage(MsgForm): void {
+  public sendMessage(MsgForm): void {
     const messagePost = {
       'senderId' : this.stateStore.loggedInUser.id,
       'receiverId' : this.friendInfo.id,
@@ -66,6 +66,14 @@ export class UserDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.friendInfo = this.stateStore.friendDetails;
+    let friendDetails = this.friendInfo;
+    this.socketProviderService.newDataSource.subscribe((data) => {
+      this.conversations = data;
+      let messages = this.conversations.filter((userInfo) => {
+        return friendDetails._id === userInfo._id;
+      });
+      this.conversations.conversations = messages;
+    });
   }
 
   ngOnDestroy() {

@@ -1,8 +1,5 @@
 <mat-toolbar color="primary">
-
   <span>Welcome  {{loggedInUser.fName}}</span>
-
-
   <span class="spacer"></span>
   <button mat-icon-button [matMenuTriggerFor]="menu">
     <mat-icon>more_vert</mat-icon>
@@ -18,33 +15,12 @@
     </button>
   </mat-menu>
 </mat-toolbar>
-<mat-tab-group (selectedTabChange)="tabNavigation($event);">
-  <mat-tab label="chat">
-    <ng-template mat-tab-label>
-      <i class="material-icons">
-        chat
-      </i>
-    </ng-template>
-  </mat-tab>
-  <mat-tab label="friendList">
-    <ng-template mat-tab-label>
-      <i class="material-icons">
-        account_circle
-      </i>
-    </ng-template>
-  </mat-tab>
-  <mat-tab label="search">
-    <ng-template mat-tab-label>
-      <i class="material-icons">search</i>
-    </ng-template>
-  </mat-tab>
-  <mat-tab label="notificationList">
-    <ng-template mat-tab-label>
-      <i class="material-icons">supervisor_account</i>
-      <span class="counter">
-
-      </span>
-    </ng-template>
-  </mat-tab>
-
-</mat-tab-group>
+<nav mat-tab-nav-bar>
+  <a mat-tab-link
+     *ngFor="let link of navLinks"
+     [routerLink]="['/'+link.path]"
+     routerLinkActive #rla="routerLinkActive"
+     [active]="rla.isActive">
+    <i class="material-icons">{{link.iconAlias}}</i>
+  </a>
+</nav>

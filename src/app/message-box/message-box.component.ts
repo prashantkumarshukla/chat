@@ -46,6 +46,7 @@ export class MessageBoxComponent implements OnInit, OnDestroy {
       .subscribe(response => {
         if (response) {
             this.chatArray.push(response[0]);
+            this.socketProviderService.newDataSource = this.chatArray;
         }
       });
   }

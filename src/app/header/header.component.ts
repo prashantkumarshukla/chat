@@ -16,30 +16,36 @@ import { StateStoreService} from '../services/state-store.service';
 export class HeaderComponent implements OnInit {
 
   public loggedInUser: any;
+  public navLinks: any;
 
   constructor(
     private router: Router,
     private stateStoreSrvice: StateStoreService
   ) {}
-  public tabNavigation(event : MatTabChangeEvent) {
-    switch (event.tab.textLabel) {
-        case  'friendList':
-          this.router.navigate(['/friendList']);
-          break;
-          case  'search':
-          this.router.navigate(['/search']);
-          break;
-      case 'notificationList':
-        this.router.navigate(['/notifications']);
-        break;
-      case 'chat':
-        this.router.navigate(['/chat']);
-        break;
-    }
-  }
-
 
   ngOnInit() {
     this.loggedInUser = this.stateStoreSrvice.loggedInUser;
+    this.navLinks = [
+      {
+        label : 'Messages',
+        path: 'chat',
+        iconAlias: 'chat'
+      },
+      {
+        label : 'Friend list',
+        path: 'friendList',
+        iconAlias: 'account_circle'
+      },
+      {
+        label : 'Search',
+        path: 'search',
+        iconAlias: 'search'
+      },
+      {
+        label : 'Notifications',
+        path: 'notifications',
+        iconAlias: 'supervisor_account'
+      }
+    ];
   }
 }

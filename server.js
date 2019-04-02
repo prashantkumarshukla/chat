@@ -93,26 +93,33 @@ io.sockets.on('connection', function(socket) {
     var filterData = {$or: [{fName: searchData.searchString}, {lName: searchData.searchString}]};
     console.log("Search Data:", JSON.stringify(filterData));
     findQueryInDB(dbCollectionName.userProfile, filterData, function (userProfileResp) {
+      console.log("Search User data: ", userProfileResp);
       var query = {$or: [{senderId: searchData.id}, {receiverId: searchData.id}]};
       findQueryInDB(dbCollectionName.friendList, query, function (friendListResp) {
         //var record = isFriendExist.friendExist(data, searchData.id);
         console.log("Friend List Table:", friendListResp);
         console.log("Search user Record:", userProfileResp);
         for(var i = 0; i < userProfileResp.length; i++) {
-          for(var k = 0; k < friendListResp.length; k++) {
-            if (friendListResp[k].senderId === userProfileResp[i].id ||
-              friendListResp[k].receiverId === userProfileResp[i].id) {
-              console.log('entered in if conditions');
+          for (var k = 0; k < friendListResp.length; k++) {
+            if (friendListResp[k].senderId === userProfileResp[i].id) {
+              console.log("Search User Profile: ", userProfileResp[i]);
               userProfileResp[i]["isFriend"] = true;
               userProfileResp[i]["friendStatus"] = friendListResp[k].status;
-              usersProfileResp[i]["isOnline"] = users[usersProfileResp[i].id] ? true  :false ;
+              userProfileResp[i]["isOnline"] = users[userProfileResp[i].id] ? true : false;
               break;
             } else {
-              userProfileResp[i]["isFriend"] = false;
+              if (friendListResp[k].receiverId === userProfileResp[i].id) {
+                console.log("Else execute: ", friendListResp[k]);
+                userProfileResp[i]["isFriend"] = true;
+                userProfileResp[i]["friendStatus"] = friendListResp[k].status;
+                break;
+              } else {
+                userProfileResp[i]["isFriend"] = false;
+              }
             }
           }
         }
-        console.log('final userProfileResp:=', userProfileResp)
+        console.log('final userProfileResp:=', userProfileResp);
         users[searchData.id].emit('search-user-list', userProfileResp);
       });
     });
@@ -167,7 +174,7 @@ io.sockets.on('connection', function(socket) {
     deleteFromDB(dbCollectionName.friendList, query, function (friendRequestResp) {
 
       var resp = {'isSuccess' : true};
-      console.log('friendRequestResp=',  friendRequestResp)
+      console.log('friendRequestResp=',  friendRequestResp);
       users[request.senderId].emit('deny-request', true);
     })
   });
@@ -182,6 +189,7 @@ io.sockets.on('connection', function(socket) {
       response ? users[reqData.senderId].emit('friend-request-status', successResponse) :
         users[reqData.senderId].emit('friend-request-status', failiureResponse);
       console.log('Friend request status:', successResponse);
+      console.log('Failure request: ', failiureResponse);
     });
   });
 
@@ -189,14 +197,14 @@ io.sockets.on('connection', function(socket) {
     console.log('request:', request);
     var query = {id: request.senderId};
     findQueryInDB(dbCollectionName.userProfile, query , function (senderData) {
-      const isOnline  = users[request.receiverId] ? true :false;
+      var isOnline  = users[request.receiverId] ? true :false;
       insertInDB(dbCollectionName.conversations, request, function () {
         if(isOnline) {
           senderData[0]["isFriend"] = true;
           senderData[0]["friendStatus"] = 'Approved';
           senderData[0]['isOnline'] = true;
           senderData[0]['message'] = request.message;
-          console.log('send-message get data:=', senderData)
+          console.log('send-message get data:=', senderData);
           users[request.receiverId].emit('receive-message', senderData);
         }
       })

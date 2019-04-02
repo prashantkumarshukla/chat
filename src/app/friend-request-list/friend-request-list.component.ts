@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnDestroy, OnInit} from '@angular/core';
 import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../services/socket-provider.service";
 import {takeUntil} from "rxjs/operators";
@@ -15,7 +15,7 @@ import { Router } from "@angular/router";
   styleUrls: ['./friend-request-list.component.scss'],
   providers: []
 })
-export class FriendRequestListComponent implements OnInit {
+export class FriendRequestListComponent implements OnInit, OnDestroy{
 
   constructor(private socketProviderService: SocketProviderService,
               private cookieService: CookieService,
@@ -37,7 +37,7 @@ export class FriendRequestListComponent implements OnInit {
   }
 
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.userId = this.stateStoreService.loggedInUser.id;
     this.retrieveFriendList();
 
@@ -53,5 +53,9 @@ export class FriendRequestListComponent implements OnInit {
   userDetailOpenDialog(friend: any) {
     this.stateStoreService.friendDetails = friend;
     this.router.navigate(['/user']);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(true);
   }
 }

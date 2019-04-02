@@ -39,7 +39,7 @@ export class SearchUserComponent implements OnInit, OnDestroy {
     });
   }
 
-  searchUser(searchString): void {
+  public searchUser(searchString): void {
     const searchObj = {
       'id': this.userId,
       'searchString': searchString.searchField
@@ -54,7 +54,7 @@ export class SearchUserComponent implements OnInit, OnDestroy {
       });
   }
 
-  userDetail(friendInfo) {
+  public userDetail(friendInfo): void {
     this.stateStoreService.friendDetails = friendInfo;
     this.router.navigate(['/user']);
   }
@@ -64,6 +64,6 @@ export class SearchUserComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-   /* this.destroy$.next(true);*/
+   this.destroy$.next(true);
   }
 }
