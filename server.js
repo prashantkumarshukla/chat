@@ -10,6 +10,8 @@ var dbCollectionName = {
   'conversations' : 'conversations'
 };
 
+var dbScripts = require('./server/database-scripts');
+
 var path = require('path');
 var http = require('http');
 
@@ -90,106 +92,99 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on("search-user", function (searchData) {
-    var filterData = {$or: [{fName: searchData.searchString}, {lName: searchData.searchString}]};
-    console.log("Search Data:", JSON.stringify(filterData));
-    findQueryInDB(dbCollectionName.userProfile, filterData, function (userProfileResp) {
-      console.log("Search User data: ", userProfileResp);
-      var query = {$or: [{senderId: searchData.id}, {receiverId: searchData.id}]};
-      findQueryInDB(dbCollectionName.friendList, query, function (friendListResp) {
-        //var record = isFriendExist.friendExist(data, searchData.id);
-        console.log("Friend List Table:", friendListResp);
-        console.log("Search user Record:", userProfileResp);
-        for(var i = 0; i < userProfileResp.length; i++) {
-          for (var k = 0; k < friendListResp.length; k++) {
-            if (friendListResp[k].senderId === userProfileResp[i].id) {
-              console.log("Search User Profile: ", userProfileResp[i]);
-              userProfileResp[i]["isFriend"] = true;
-              userProfileResp[i]["friendStatus"] = friendListResp[k].status;
-              userProfileResp[i]["isOnline"] = users[userProfileResp[i].id] ? true : false;
-              break;
-            } else {
-              if (friendListResp[k].receiverId === userProfileResp[i].id) {
-                console.log("Else execute: ", friendListResp[k]);
-                userProfileResp[i]["isFriend"] = true;
-                userProfileResp[i]["friendStatus"] = friendListResp[k].status;
-                break;
-              } else {
-                userProfileResp[i]["isFriend"] = false;
+    dbScripts.searchUserProfile(searchData).then(function (searchResponse) {
+      var buildResponse = [];
+      searchResponse.forEach(function (data) {
+        dbScripts.validateFriendList(data.id, searchData.id).then(function (friendResponse) {
+          if (friendResponse.length === 0) {
+            dbScripts.validateFriendList(searchData.id, data.id).then(function (newFriendResponse) {
+              if (newFriendResponse.length > 0) {
+                newFriendResponse.forEach( function (value) {
+                  value.friendStatus = value.status;
+                  value.isFriend = true;
+                  buildResponse.push(value);
+                });
               }
-            }
+            });
+          } else {
+            friendResponse.isFriend = true;
+            friendResponse.friendStatus = friendResponse.status;
+            buildResponse.push(friendResponse);
           }
-        }
-        console.log('final userProfileResp:=', userProfileResp);
-        users[searchData.id].emit('search-user-list', userProfileResp);
+        });
+        buildResponse.push(data);
       });
+      users[searchData.id].emit('search-user-list', buildResponse);
+    }).catch(function (reason) {
+      console.log("Error in execution: ", reason)
     });
   });
 
   socket.on("get-notification-list", function (request) {
-    var filterData = {$and: [{receiverId: request}, {status: 'Pending'}]};
-    console.log('filterData:='+ JSON.stringify(filterData));
-    findQueryInDB(dbCollectionName.friendList, filterData, function (friendRequestListResp) {
-      console.log("get-notification-list:= ", friendRequestListResp);
+    dbScripts.friendRequest(request).then(function (response) {
       var senderIds = [];
-      for(var i =0 ;i<friendRequestListResp.length;i++) {
-       if(friendRequestListResp[i]){
-         senderIds.push(friendRequestListResp[i].senderId)
-       }
+      var buildResponse = [];
+      console.log("Response: ", response);
+      if (response.length > 0) {
+        response.forEach(function (list) {
+          senderIds.push(list.senderId);
+        });
+        dbScripts.userProfiles(senderIds).then(function (profileDetails) {
+          profileDetails.forEach(function (userData) {
+            userData.isFriend = true;
+            userData.friendStatus = 'Pending';
+            userData.isOnline = users[userData.id] ? true : false;
+            buildResponse.push(userData);
+          });
+          users[request].emit('get-notifications', buildResponse);
+          //users[request].emit('new-request', buildResponse.length);
+        });
       }
-      var query = { id: { $in: senderIds } };
-      findQueryInDB(dbCollectionName.userProfile, query, function (usersProfileResp) {
-          for(var k = 0; k < usersProfileResp.length; k++) {
-              usersProfileResp[k]["isFriend"] = true;
-              usersProfileResp[k]["friendStatus"] = 'Pending';
-              usersProfileResp[k]["isOnline"] = users[usersProfileResp[k].id] ? true  :false ;
-          }
-        console.log('final usersProfileResp:= ', usersProfileResp);
-        users[request].emit('get-notifications', usersProfileResp);
-      })
     });
   });
 
 
   socket.on("confirm-friend-request", function (request) {
-
-    var query = {$and: [{receiverId: request.senderId}, {senderId: request.receiverId}]};
-    var data = { $set: {status: request.action}};
-
-    console.log('query:=', JSON.stringify(query));
-    console.log('data:=', JSON.stringify(data));
-    updateInDB(dbCollectionName.friendList, query, data, function (friendRequestResp) {
-      console.log('confirm-friend-request:=',request.receiverId );
-      console.log('users:=',users);
-      users[request.senderId].emit('confirm-request', true);
-    })
+    dbScripts.confirmFriendRequest(request).then(function (value) {
+      console.log("Request confirm: ", value);
+      users[request.senderId].emit('confirm-request', true); // Confirmed back to the user who confirm the request
+      if (users[request.receiverId]) {
+        var ids = [];
+        ids.push(request.senderId);
+        dbScripts.userProfiles(ids).then(function (userProfile) {
+          console.log('Request sent back to the sender: ', userProfile);
+          users[request.receiverId].emit('friend-request-confirmed', userProfile);
+        });
+      }
+    });
   });
 
 
   socket.on("deny-friend-request", function (request) {
-
     var query = {$and: [{receiverId: request.senderId}, {senderId: request.receiverId}]};
-
     console.log('query:=', JSON.stringify(query));
-
     deleteFromDB(dbCollectionName.friendList, query, function (friendRequestResp) {
-
       var resp = {'isSuccess' : true};
       console.log('friendRequestResp=',  friendRequestResp);
       users[request.senderId].emit('deny-request', true);
-    })
+    });
   });
 
   socket.on("sent-request", function (reqData) {
-    insertInDB(dbCollectionName.friendList, reqData, function (response) {
+    dbScripts.newFriendRequest(reqData).then(function (response) {
       var successResponse = {
         "status": true,
         "code": 200
       };
-      var failiureResponse = {"status": false, "code": 500};
+      var failiureResponse = {
+        "status": false,
+        "code": 500
+      };
       response ? users[reqData.senderId].emit('friend-request-status', successResponse) :
         users[reqData.senderId].emit('friend-request-status', failiureResponse);
-      console.log('Friend request status:', successResponse);
-      console.log('Failure request: ', failiureResponse);
+      if (users[reqData.receiverId]) {
+        users[reqData.receiverId].emit('new-request', '1');
+      }
     });
   });
 

@@ -36,7 +36,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
       'action' : 'Approved'
     };
     this.socketProviderService.confirmFriendRequest(reqObj);
-    this.socketProviderService.serverInteraction()
+    this.socketProviderService.confirmRequestStatus()
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
         this.confirmRequestResp = response;

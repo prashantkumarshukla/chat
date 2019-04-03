@@ -22,5 +22,68 @@ module.exports = {
         });
       }
     });
+  },
+  insertInDB: function (collectionName, data, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName)
+          .insertOne(data, function (err, res) {
+            if (err) {
+              console.log('Data insertion failed: ' + err);
+              callback(false);
+            } else {
+              console.log(res.insertedCount + ': Data inserted successfully ');
+              callback(true);
+              db.close();
+            }
+          });
+      }
+    });
+  },
+  deleteFromDB: function (collectionName, query, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName)
+          .deleteOne(query, function (err, res) {
+            if (err) {
+              console.log('Data Deletion failed: ' + err);
+              callback(false);
+            } else {
+              console.log(res.insertedCount + ': Data Deletion successfully ');
+              callback(true);
+              db.close();
+            }
+          });
+      }
+    });
+  },
+  updateInDB: function(collectionName, filter, data, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName)
+          .updateOne(filter, data, function (err, res) {
+            if (err) {
+              console.log('Data updation failed: ' + err);
+              callback(false);
+            } else {
+              console.log(res.insertedCount + ': Data updated successfully ');
+              callback(true);
+              db.close();
+            }
+          });
+      }
+    });
   }
 };

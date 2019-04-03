@@ -46,7 +46,7 @@ export class SearchUserComponent implements OnInit, OnDestroy {
     };
     this.socketProviderService.searchUser(searchObj);
 
-    this.socketProviderService.serverInteraction()
+    this.socketProviderService.retrieveSearchUser()
       .pipe(takeUntil(this.destroy$))
       .subscribe(searchList => {
         this.searchResponse = searchList;

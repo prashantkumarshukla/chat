@@ -7,7 +7,6 @@ import { MatRippleModule } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule, MatCheckboxModule, MatCardModule, MatMenuModule, MatToolbarModule, MatIconModule, MatTabsModule, MatDialogModule, MatGridListModule } from '@angular/material';
-
 import { AppComponent } from './app.component';
 import { LoginPanelComponent } from './login-panel/login-panel.component';
 import { ModalModule } from "./modal/modal.module";
@@ -31,6 +30,9 @@ import {UserSearchService} from "./search-user/user-search.service";
 import {HttpClientModule} from "@angular/common/http";
 import { AddFriendComponent } from './user-detail/request-action/add-friend/add-friend.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { NotificationComponent } from './notification/notification.component';
+import { NoticationBadgeComponent } from './notication-badge/notication-badge.component';
+import { MatSnackBarModule } from "@angular/material";
 
 
 const appRoutes:Routes = [
@@ -84,7 +86,9 @@ const appRoutes:Routes = [
     MessageListComponent,
     RequestActionComponent,
     HeaderComponent,
-    AddFriendComponent
+    AddFriendComponent,
+    NotificationComponent,
+    NoticationBadgeComponent
   ],
   imports: [
     RouterModule.forRoot(
@@ -108,7 +112,8 @@ const appRoutes:Routes = [
     MatTabsModule,
     MatDialogModule,
     MatGridListModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatSnackBarModule
   ],
   entryComponents : [
     RegistrationFormComponent,

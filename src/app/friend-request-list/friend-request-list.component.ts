@@ -24,32 +24,24 @@ export class FriendRequestListComponent implements OnInit, OnDestroy{
   ) { }
 
   public friendRequest: any;
-
   public userId: string;
-
-  private searchSubscription : Subscription;
   destroy$: Subject<boolean> = new Subject<boolean>();
-  private showSpinner: boolean;
+  private showSpinner: boolean = false;
 
   retrieveFriendList(): void {
-    this.showSpinner = true;
     this.socketProviderService.getNotificationList(this.userId);
   }
-
-
   ngOnInit(): void {
     this.userId = this.stateStoreService.loggedInUser.id;
     this.retrieveFriendList();
 
-    this.socketProviderService.serverInteraction()
+    this.socketProviderService.retrieveFriendNotification()
       .pipe(takeUntil(this.destroy$))
       .subscribe(searchList => {
         this.friendRequest = searchList;
         console.log('Search list is: ' + JSON.stringify(this.friendRequest));
-        this.showSpinner = false;
       });
   }
-
   userDetailOpenDialog(friend: any) {
     this.stateStoreService.friendDetails = friend;
     this.router.navigate(['/user']);
