@@ -16,10 +16,17 @@ import { StateStoreService } from "../services/state-store.service";
   providers: [MatTabGroup, HttpServiceService]
 })
 export class FriendListComponent implements OnInit, OnDestroy {
-
+  /**
+   * friendList
+   */
   public friendList: any;
-  public getResponse: any;
-  destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * destroy$
+   */
+  public destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * showSpinner
+   */
   private showSpinner: boolean;
 
   constructor(
@@ -29,10 +36,13 @@ export class FriendListComponent implements OnInit, OnDestroy {
     private stateStoreService: StateStoreService
   ) { }
 
+  /**
+   * This method is to retrieve the friend list
+   */
   public retrieveFriendList(): void {
     this.showSpinner = true;
     this.socketProviderService.getFriendList(this.stateStoreService.loggedInUser.id);
-    this.socketProviderService.serverInteraction()
+    this.socketProviderService.firendList()
       .pipe(takeUntil(this.destroy$))
       .subscribe(friendList => {
         this.friendList = friendList;
@@ -41,17 +51,19 @@ export class FriendListComponent implements OnInit, OnDestroy {
       });
   }
 
-
+  /**
+   * This method is to navigate the user detail page
+   * @param friend
+   */
+  public userDetailOpenDialog(friend: any) {
+    this.stateStoreService.friendDetails = friend;
+    this.router.navigate(['/user']);
+  }
   ngOnInit() {
     this.retrieveFriendList();
   }
 
   ngOnDestroy() {
     this.destroy$.next(true );
-  }
-
-  userDetailOpenDialog(friend: any) {
-    this.stateStoreService.friendDetails = friend;
-    this.router.navigate(['/user']);
   }
 }

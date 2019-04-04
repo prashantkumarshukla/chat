@@ -22,6 +22,22 @@ module.exports = {
       });
     });
   },
+  friendList: function(requestData) {
+    return new Promise(function (resolve, reject) {
+      var filterData = {$and: [{$or: [{receiverId: requestData}, {senderId: requestData}]}, {status: 'Approved'}]};
+      dbConnect.findQueryInDB(dbCollectionName.friendList, filterData, function (response) {
+        resolve(response);
+      });
+    });
+  },
+  friendListWithAllStatus: function(requestData) {
+    return new Promise(function (resolve, reject) {
+      var filterData = {$and: [{$or: [{receiverId: requestData}, {senderId: requestData}]}]};
+      dbConnect.findQueryInDB(dbCollectionName.friendList, filterData, function (response) {
+        resolve(response);
+      });
+    });
+  },
   validateFriendList: function (friendId, userId) {
     return new Promise(function (resolve, reject) {
       var query = {$or: [{senderId: friendId}, {receiverId: userId}]};
@@ -52,6 +68,23 @@ module.exports = {
       dbConnect.updateInDB(dbCollectionName.friendList, query, data, function (response) {
         resolve(response);
       });
+    });
+  },
+  denyFriendRequest: function (requestData) {
+    return new Promise(function (resolve, reject) {
+      var query = {$and: [{receiverId: requestData.senderId}, {senderId: requestData.receiverId}]};
+      dbConnect.deleteFromDB(dbCollectionName.friendList, query, function (response) {
+        resolve(response);
+      });
+    });
+  },
+  saveConversations: function (requestData) {
+    return new Promise(function (resolve, reject) {
+      var todayDate = new Date();
+      requestData.dateAndTime = todayDate;
+      dbConnect.insertInDB(dbCollectionName.conversations, requestData, function (response) {
+        resolve(response);
+      })
     });
   }
 };

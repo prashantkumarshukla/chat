@@ -30,24 +30,26 @@
       <app-request-action [actionObj]="friendInfo"></app-request-action>
       <hr />
       <div class="chat-pane">
-        <div *ngFor="let chat of conversations.conversations">
-            <div class="sent">
-            <b>  Me:</b> <p>{{chat.me}}</p>
+        <div *ngFor="let chat of conversations">
+            <div class="sent text-right" *ngIf="chat.me">
+              <b>  Me:</b> {{chat.me}}
             </div>
-            <div class="received">
-             <b> {{friendInfo.fName}}:</b> <p>{{chat.friend}}</p>
+            <div class="received" *ngIf="chat.message">
+              <b> {{chat.fName}}:</b> {{chat.message}}
             </div>
         </div>
       </div>
       <div class="send-message-pane">
         <p class="typingStatus"
            *ngIf="typeResponse">
-          {{typeResponse}}
+          {{friendInfo.fName}} is typing
         </p>
         <form [formGroup]="messageForm"
               (ngSubmit)="sendMessage(messageForm.value)">
           <input class="form-control type-pane"
                  type="text"
+                 (keydown)="userTyping(true)"
+                 (blur)="userTyping(false)"
                  formControlName="chatMessage"
                 />
           <button mat-raised-button

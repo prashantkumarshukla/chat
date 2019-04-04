@@ -18,7 +18,6 @@ import "hammerjs";
 import { FriendListComponent } from './friend-list/friend-list.component';
 import { SearchUserComponent } from './search-user/search-user.component';
 import { UserDetailComponent } from './user-detail/user-detail.component';
-import { ChatPaneComponent } from './chat-pane/chat-pane.component';
 import { FriendListCounterComponent } from './friend-list-counter/friend-list-counter.component';
 import { FriendRequestListComponent } from './friend-request-list/friend-request-list.component';
 import { SocketProviderService } from "./services/socket-provider.service";
@@ -80,7 +79,6 @@ const appRoutes:Routes = [
     FriendListComponent,
     SearchUserComponent,
     UserDetailComponent,
-    ChatPaneComponent,
     FriendListCounterComponent,
     FriendRequestListComponent,
     MessageListComponent,

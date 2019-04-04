@@ -3,8 +3,6 @@ import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../../services/socket-provider.service";
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
-import {Subscription} from 'rxjs/index';
-import { Router } from '@angular/router';
 import {StateStoreService} from '../../services/state-store.service';
 
 @Component({
@@ -13,22 +11,37 @@ import {StateStoreService} from '../../services/state-store.service';
   styleUrls: ['./request-action.component.scss']
 })
 export class RequestActionComponent implements OnInit , OnDestroy {
+  /**
+   * actionObj
+   */
   @Input() actionObj: any;
+  /**
+   * friendInfo
+   */
   public friendInfo: any;
-  public sentRequest: any;
+  /**
+   * confirmRequestResp
+   */
   public confirmRequestResp: any;
-  destroy$: Subject<boolean> = new Subject<boolean>();
-  private confirmRequestsSubscription: Subscription;
+  /**
+   * destroy$
+   */
+  public destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * showSpinner
+   */
   private showSpinner: boolean;
   constructor(
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService,
-    private router: Router,
     private stateStoreService: StateStoreService
   ) {
   }
 
-  confirmRequest(): void {
+  /**
+   * This method is to use confirm request
+   */
+  public confirmRequest(): void {
     this.showSpinner = true;
     const reqObj = {
       'receiverId' : this.friendInfo.id,
@@ -44,7 +57,10 @@ export class RequestActionComponent implements OnInit , OnDestroy {
       });
   }
 
-  denyRequest(): void {
+  /**
+   * This method is to deny the friend request
+   */
+  public denyRequest(): void {
     this.showSpinner = true;
     const reqObj = {
       'receiverId' : this.friendInfo.id,
@@ -52,7 +68,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
       'action' : 'Rejected'
     };
     this.socketProviderService.denyFriendRequest(reqObj);
-    this.socketProviderService.serverInteraction()
+    this.socketProviderService.denyFriendRequestBack()
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
         this.confirmRequestResp = response;

@@ -12,30 +12,41 @@ import {StateStoreService} from '../../../services/state-store.service';
   styleUrls: ['./add-friend.component.scss']
 })
 export class AddFriendComponent implements OnInit, OnDestroy{
-
+  /**
+   * @Input() actionOb
+   */
   @Input() actionObj: any;
+  /**
+   * friendInfo
+   */
   public friendInfo: any;
+  /**
+   * sentRequest
+   */
   public sentRequest: boolean;
-  destroy$: Subject<boolean> = new Subject<boolean>();
-  public friendRequestStatus: Subscription;
+  /**
+   * destroy$
+   */
+  public destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * ApiResp
+   */
   public ApiResp: any;
+  /**
+   * showSpinner
+   */
   public showSpinner: boolean;
 
   constructor(
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService,
     private stateStoreService: StateStoreService
-
   ) { }
 
-  ngOnInit() {
-
-    this.friendInfo = this.actionObj;
-    this.sentRequest = false;
-    this.showSpinner = false;
-  }
-
-  sendFriendRequest(): void {
+  /**
+   * This method is to send the friend request
+   */
+  public sendFriendRequest(): void {
     this.showSpinner = true;
     const reqObj = {
       'senderId': this.stateStoreService.loggedInUser.id,
@@ -43,13 +54,19 @@ export class AddFriendComponent implements OnInit, OnDestroy{
       'status': 'Pending'
     };
     this.socketProviderService.sendFriendRequest(reqObj);
-    this.socketProviderService.serverInteraction()
+    this.socketProviderService.friendRequestConfirmation()
       .pipe(takeUntil(this.destroy$))
       .subscribe(response => {
         this.ApiResp = response;
         this.sentRequest = true;
         this.showSpinner = false;
       });
+  }
+
+  ngOnInit() {
+    this.friendInfo = this.actionObj;
+    this.sentRequest = false;
+    this.showSpinner = false;
   }
   ngOnDestroy() {
     this.destroy$.next(true);

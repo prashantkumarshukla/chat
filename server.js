@@ -63,31 +63,26 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on("friend-list", function (request) {
-    var filterData = {$and: [
-        {$or: [{receiverId: request}, {senderId: request}]},
-        {status: 'Approved'}
-        ]};
-    console.log('filterData:='+ JSON.stringify(filterData));
-    findQueryInDB(dbCollectionName.friendList, filterData, function (friendRequestListResp) {
-      console.log("get-notification-list:= ", friendRequestListResp);
+    dbScripts.friendList(request).then(function (response) {
       var Ids = [];
-      for(var i =0 ;i<friendRequestListResp.length;i++) {
-            if(friendRequestListResp[i].senderId!==request)
-              Ids.push(friendRequestListResp[i].senderId)
-
-            if(friendRequestListResp[i].receiverId!==request)
-              Ids.push(friendRequestListResp[i].receiverId)
-      }
-      var query = { id: { $in: Ids } };
-      findQueryInDB(dbCollectionName.userProfile, query, function (usersProfileResp) {
-        for(var k = 0; k < usersProfileResp.length; k++) {
-          usersProfileResp[k]["isFriend"] = true;
-          usersProfileResp[k]["friendStatus"] = 'Approved';
-          usersProfileResp[k]["isOnline"] = users[usersProfileResp[k].id] ? true  :false ;
+      response.forEach(function(data) {
+        if (data.senderId !== request) {
+          Ids.push(data.senderId);
         }
-        console.log('final usersProfileResp:= ', usersProfileResp);
-        users[request].emit('get-friend-list', usersProfileResp);
-      })
+        if (data.receiverId !== request) {
+          Ids.push(data.receiverId);
+        }
+      });
+      dbScripts.userProfiles(Ids).then(function (usersProfileResp) {
+        var buildResponse = [];
+        usersProfileResp.forEach(function (detail) {
+          detail.isFriend = true;
+          detail.friendStatus = 'Approved';
+          detail.isOnline = users[detail.id] ? true : false;
+          buildResponse.push(detail);
+        });
+        users[request].emit('get-friend-list', buildResponse);
+      });
     });
   });
 
@@ -161,11 +156,7 @@ io.sockets.on('connection', function(socket) {
 
 
   socket.on("deny-friend-request", function (request) {
-    var query = {$and: [{receiverId: request.senderId}, {senderId: request.receiverId}]};
-    console.log('query:=', JSON.stringify(query));
-    deleteFromDB(dbCollectionName.friendList, query, function (friendRequestResp) {
-      var resp = {'isSuccess' : true};
-      console.log('friendRequestResp=',  friendRequestResp);
+    dbScripts.denyFriendRequest(request).then(function (response) {
       users[request.senderId].emit('deny-request', true);
     });
   });
@@ -189,21 +180,39 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('send-message', function (request) {
-    console.log('request:', request);
-    var query = {id: request.senderId};
-    findQueryInDB(dbCollectionName.userProfile, query , function (senderData) {
-      var isOnline  = users[request.receiverId] ? true :false;
-      insertInDB(dbCollectionName.conversations, request, function () {
-        if(isOnline) {
-          senderData[0]["isFriend"] = true;
-          senderData[0]["friendStatus"] = 'Approved';
-          senderData[0]['isOnline'] = true;
-          senderData[0]['message'] = request.message;
-          console.log('send-message get data:=', senderData);
-          users[request.receiverId].emit('receive-message', senderData);
+    var Ids = [];
+    var isOnline = users[request.receiverId] ? true : false;
+    Ids.push(request.senderId);
+    dbScripts.userProfiles(Ids).then(function (response) {
+      console.log("User Profile: ", response);
+      var detail = {};
+      detail.fName = response[0].fName;
+      detail.lName = response[0].lName;
+      detail.gender = response[0].gender;
+      detail.id = response[0].id;
+      dbScripts.saveConversations(request).then(function (conversationDetails) {
+        if (isOnline) {
+          dbScripts.friendListWithAllStatus(request.senderId).then(function (userDetails) {
+            if(userDetails.length > 0) {
+              detail.isFriend = userDetails[0].status === 'Approved' ? true : false;
+              detail.friendStatus = userDetails[0].status;
+              detail.isOnline = isOnline;
+              detail.message = request.message;
+              console.log("M1: ", detail);
+              users[request.receiverId].emit('receive-message', detail);
+            }
+          });
         }
-      })
+        console.log("To Sender: ", conversationDetails);
+        users[request.senderId].emit('message-sent', conversationDetails);
+      });
     });
+  });
+
+  socket.on('typing', function (request) {
+    if (users[request.friendId]) {
+      users[request.friendId].emit('user-is-typing', true);
+    }
   });
 });
 

@@ -111,6 +111,78 @@ export class SocketProviderService {
     });
     return confirmBack;
   }
+
+  /**
+   * This method is to confirm delete friend request
+   */
+  public denyFriendRequestBack() {
+    const denyConfirmation = new Observable((data) => {
+      this.socket.on('deny-request', (response) => {
+        data.next(response);
+      })
+    });
+    return denyConfirmation;
+  }
+
+  /**
+   * This method is to retrieve the friend list
+   */
+  public firendList() {
+    const retrieveList = new Observable((data) => {
+      this.socket.on('get-friend-list', (friendList) => {
+        data.next(friendList);
+      });
+    });
+    return retrieveList;
+  }
+
+  /**
+   * This method is to confirm whether the friend request received or not
+   */
+  public friendRequestConfirmation() {
+    const requestStatus = new Observable((data) => {
+      this.socket.on('friend-request-status', (reqStatus) => {
+        data.next(reqStatus);
+      });
+    });
+    return requestStatus;
+  }
+
+  /**
+   * This method is to receive the conversations
+   */
+  public receiveMessages() {
+    const retrieveMessages = new Observable((data) => {
+      this.socket.on('receive-message', (response) => {
+        data.next(response);
+      });
+    });
+    return retrieveMessages;
+  }
+  /**
+   * This method is to confirm whether message has been delivered or not
+   */
+  public messageSentStatus() {
+    const messageStatus = new Observable((data) => {
+      this.socket.on('message-sent', (response) => {
+        data.next(response);
+      });
+    });
+    return messageStatus;
+  }
+
+  /**
+   * This method is to get typing status
+   */
+  public getTypingStatus() {
+    const typeStatus = new Observable((data) => {
+      this.socket.on('user-is-typing', (response) => {
+        data.next(response);
+      });
+    });
+    return typeStatus;
+  }
+
   public updateTypingStatus(data: any): void {
     this.userTyping.next(data);
   }
@@ -150,22 +222,6 @@ export class SocketProviderService {
       });
       this.socket.on('new message', (chats) => {
         observer.next(chats);
-      });
-      this.socket.on('get-friend-list', (friendList) => {
-        observer.next(friendList);
-      });
-      this.socket.on('user-is-typing', (typing) => {
-        console.log('Typing', typing);
-        observer.next(typing);
-      });
-      this.socket.on('deny-request', (data) => {
-        observer.next(data);
-      });
-      this.socket.on('friend-request-status', (data) => {
-        observer.next(data);
-      });
-      this.socket.on('receive-message', (data) => {
-        observer.next(data);
       });
     });
     return observable;
