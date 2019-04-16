@@ -1,19 +1,23 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import {Route, RouterModule, Routes} from "@angular/router";
+import { RouterModule, Routes } from "@angular/router";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
-import { HttpModule } from "@angular/http";
-import { MatRippleModule } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatButtonModule, MatCheckboxModule, MatCardModule, MatMenuModule, MatToolbarModule, MatIconModule, MatTabsModule, MatDialogModule, MatGridListModule } from '@angular/material';
 import { AppComponent } from './app.component';
 import { LoginPanelComponent } from './login-panel/login-panel.component';
-import { ModalModule } from "./modal/modal.module";
+
+import { MatSnackBarModule } from "@angular/material";
+import { MatBadgeModule } from "@angular/material";
+import { MatExpansionModule } from "@angular/material";
+import { MatTooltipModule } from "@angular/material";
+import { MatFormFieldModule } from "@angular/material";
+import { MatInputModule } from "@angular/material";
+import { MatSelectModule } from "@angular/material";
+import { MatOptionModule } from "@angular/material";
 
 import { FacebookModule } from "ngx-facebook";
-import { MessageBoxComponent } from './message-box/message-box.component';
-import { RegistrationFormComponent } from './registration-form/registration-form.component';
 import "hammerjs";
 import { FriendListComponent } from './friend-list/friend-list.component';
 import { SearchUserComponent } from './search-user/search-user.component';
@@ -24,14 +28,22 @@ import { SocketProviderService } from "./services/socket-provider.service";
 import { MessageListComponent } from './message-list/message-list.component';
 import { RequestActionComponent } from './user-detail/request-action/request-action.component';
 import { HeaderComponent } from './header/header.component';
-import {StateStoreService} from "./services/state-store.service";
-import {UserSearchService} from "./search-user/user-search.service";
-import {HttpClientModule} from "@angular/common/http";
+import { StateStoreService } from "./services/state-store.service";
+import { GetUserProfileService } from "./services/get-user-profile.service";
+import { HttpClientModule } from "@angular/common/http";
 import { AddFriendComponent } from './user-detail/request-action/add-friend/add-friend.component';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NotificationComponent } from './notification/notification.component';
 import { NoticationBadgeComponent } from './notication-badge/notication-badge.component';
-import { MatSnackBarModule } from "@angular/material";
+import { NewMessageNotificationComponent } from './new-message-notification/new-message-notification.component';
+import { RegistrationComponent } from './registration/registration.component';
+import { CommanChatComponent } from './comman-chat/comman-chat.component';
+import { ChatRoomConversationComponent } from './comman-chat/chat-room-conversation/chat-room-conversation.component';
+import { ChatPaneComponent } from './comman-chat/chat-pane/chat-pane.component';
+import { ChatRoomServiceService } from "./services/chat-room-service.service";
+import { FriendListService } from "./services/friend-list.service";
+import { LoadMessageService } from "./services/load-message.service";
+import { ChangeRoomComponent } from './comman-chat/chat-room-conversation/change-room/change-room.component';
 
 
 const appRoutes:Routes = [
@@ -46,7 +58,7 @@ const appRoutes:Routes = [
   },
   {
     path : 'register',
-    component : LoginPanelComponent
+    component : RegistrationComponent
   },
   {
     path : 'search',
@@ -54,7 +66,7 @@ const appRoutes:Routes = [
   },
   {
     path : 'chat',
-    component : MessageBoxComponent
+    component : MessageListComponent
   },
   {
     path: 'user',
@@ -67,6 +79,14 @@ const appRoutes:Routes = [
   {
     path: 'friendList',
     component : FriendListComponent
+  },
+  {
+    path: 'commanChat',
+    component : CommanChatComponent
+  },
+  {
+    path: 'chatRoom',
+    component : ChatRoomConversationComponent
   }
 ];
 
@@ -74,8 +94,6 @@ const appRoutes:Routes = [
   declarations: [
     AppComponent,
     LoginPanelComponent,
-    MessageBoxComponent,
-    RegistrationFormComponent,
     FriendListComponent,
     SearchUserComponent,
     UserDetailComponent,
@@ -86,7 +104,13 @@ const appRoutes:Routes = [
     HeaderComponent,
     AddFriendComponent,
     NotificationComponent,
-    NoticationBadgeComponent
+    NoticationBadgeComponent,
+    NewMessageNotificationComponent,
+    RegistrationComponent,
+    CommanChatComponent,
+    ChatRoomConversationComponent,
+    ChatPaneComponent,
+    ChangeRoomComponent
   ],
   imports: [
     RouterModule.forRoot(
@@ -95,11 +119,9 @@ const appRoutes:Routes = [
     ),
     HttpClientModule,
     BrowserModule,
-    ModalModule,
     FacebookModule.forRoot(),
     FormsModule,
     ReactiveFormsModule,
-    HttpModule,
     BrowserAnimationsModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -111,13 +133,27 @@ const appRoutes:Routes = [
     MatDialogModule,
     MatGridListModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatBadgeModule,
+    MatExpansionModule,
+    MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatOptionModule
   ],
   entryComponents : [
-    RegistrationFormComponent,
-    UserDetailComponent
+    ChangeRoomComponent
   ],
-  providers: [ CookieService, SocketProviderService, StateStoreService, UserSearchService ],
+  providers: [
+    CookieService,
+    SocketProviderService,
+    StateStoreService,
+    ChatRoomServiceService,
+    FriendListService,
+    GetUserProfileService,
+    LoadMessageService
+  ],
   bootstrap: [ AppComponent ]
 })
 export class AppModule { }

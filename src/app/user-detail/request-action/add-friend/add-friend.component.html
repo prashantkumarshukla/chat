@@ -1,14 +1,10 @@
-<div *ngIf="!friendInfo.isFriend && !sentRequest">
+<div *ngIf="!friendInfo.isFriend && friendInfo.status !== 'Pending'">
   <div *ngIf="friendInfo.gender ==='Male'; then maleBlock else femaleBlock"></div>
   <ng-template #maleBlock>
-    <p>
-      He is not in your friend list. Send him request.
-    </p>
+    <p>He is not in your friend list. Send him request.</p>
   </ng-template>
   <ng-template #femaleBlock>
-    <p>
-      She is not in your friend list. Send her request.
-    </p>
+    <p>She is not in your friend list. Send her request.</p>
   </ng-template>
 
   <button
@@ -21,9 +17,5 @@
 
 <div *ngIf="sentRequest">
   Your request is sent successfully
-</div>
-
-<div *ngIf="showSpinner">
-  <mat-progress-spinner  mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
 </div>
 

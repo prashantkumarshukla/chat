@@ -65,6 +65,18 @@ module.exports = {
       }
     });
   },
+  updateRows: function(collectionName, filter, data, multi, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        //console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName).update(filter, data, multi);
+        db.close();
+      }
+    });
+  },
   updateInDB: function(collectionName, filter, data, callback) {
     mongoClient.connect(mongoUrl, function (err, db) {
       if (err) {
@@ -83,6 +95,19 @@ module.exports = {
               db.close();
             }
           });
+      }
+    });
+  },
+  pushInDB: function (collectionName, filter, data, callback) {
+    mongoClient.connect(mongoUrl, function (err, db) {
+      if (err) {
+        //console.log('Database not connected: ' + err);
+        callback(false);
+      } else {
+        var dbo = db.db(dbName);
+        dbo.collection(collectionName)
+          .update(filter, data);
+        db.close();
       }
     });
   }

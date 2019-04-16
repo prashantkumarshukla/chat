@@ -14,20 +14,10 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    var myquery = { };
-
-    dbo.collection('friendList')
-      .deleteMany(myquery, function(err, result) {
-
-      if(err) {
-
-        console.log('Query not executed: ' +  err);
-      } else {
-
-        console.log('Record delted');
-
-        db.close();
-      }
-    });
+    var myquery = {'chatReferenceId': '20193126575850'};
+    var fieldToUpdate = { $set : { 'conversations.$[].unread': false}};
+    var multiTrue = {multi : true};
+      dbo.collection('conversations').update(myquery, fieldToUpdate,multiTrue);
+    db.close();
   }
 });

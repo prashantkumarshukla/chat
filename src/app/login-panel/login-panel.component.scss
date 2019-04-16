@@ -1,6 +1,11 @@
 .col-centered {
   margin: 0 auto;
 }
+.login-module {
+  background: #FFFFFF;
+  padding: 20px 0;
+  height: 100%;
+}
 .panel {
   border:1px solid #CCCCCC;
   -webkit-border-radius: 5px;
@@ -8,27 +13,29 @@
   border-radius: 5px;
   background: #FFFFFF;
   padding-bottom: 20px;
+  box-shadow: 5px 5px 5px #CCC;
   .panel-heading {
-    background: #F2F2F2;
-    padding: 20px;
+    background: #673ab7;
+    padding: 15px;
     border-bottom: 1px solid #CCCCCC;
     h1 {
-      font-size: medium;
       display: block;
-      text-align: center;
-      text-transform: uppercase;
+      text-align: left;
+      font: 500 20px/23px Roboto,"Helvetica Neue",sans-serif;
+      text-shadow: 2px 2px 5px #000;
+      color: #FFFFFF;
     }
   }
   .panel-body {
-    padding:50px;
+    padding:25px;
     @media screen and (max-width: 723px) {
       padding:10px
     }
+    label {
+      font: 500 15px/23px Roboto,"Helvetica Neue",sans-serif;
+    }
     input {
-      border: none !important;
-      border-bottom: 1px solid #00cc00 !important;
       border-radius: 0px;
-      padding:0
     }
     .or {
       position: absolute;
@@ -47,6 +54,9 @@
       color: #fc2c00;
       border-radius: 0px;
       background: #FFF;
+      text-align: right;
+      font-weight: bold;
+      font: 500 15px/23px Roboto,"Helvetica Neue",sans-serif;
     }
   }
   .panel-footer {

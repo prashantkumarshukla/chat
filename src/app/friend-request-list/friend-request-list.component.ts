@@ -3,7 +3,6 @@ import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../services/socket-provider.service";
 import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
-import {Subscription} from 'rxjs/index';
 import { StateStoreService } from "../services/state-store.service";
 import { Router } from "@angular/router";
 
@@ -23,18 +22,41 @@ export class FriendRequestListComponent implements OnInit, OnDestroy{
               private router: Router
   ) { }
 
-  public friendRequest: any;
-  public userId: string;
-  destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * friendRequest
+   */
+  private friendRequest: any;
+  /**
+   * userId
+   */
+  private userId: string;
+  /**
+   * destroy$
+   */
+  private destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * showSpinner
+   */
   private showSpinner: boolean = false;
 
-  retrieveFriendList(): void {
+  /**
+   * This method is to retrieve the friend list
+   */
+  private retrieveFriendList(): void {
     this.socketProviderService.getNotificationList(this.userId);
   }
-  ngOnInit(): void {
-    this.userId = this.stateStoreService.loggedInUser.id;
-    this.retrieveFriendList();
 
+  /**
+   * This method is to set the friend id and route the user detail page
+   * @param friend
+   */
+  private userDetailOpenDialog(friend: any) {
+    this.stateStoreService.setFriendId(friend.id);
+    this.router.navigate(['/user']);
+  }
+  ngOnInit(): void {
+    this.userId = this.stateStoreService.loggedInUserId();
+    this.retrieveFriendList();
     this.socketProviderService.retrieveFriendNotification()
       .pipe(takeUntil(this.destroy$))
       .subscribe(searchList => {
@@ -42,11 +64,6 @@ export class FriendRequestListComponent implements OnInit, OnDestroy{
         console.log('Search list is: ' + JSON.stringify(this.friendRequest));
       });
   }
-  userDetailOpenDialog(friend: any) {
-    this.stateStoreService.friendDetails = friend;
-    this.router.navigate(['/user']);
-  }
-
   ngOnDestroy() {
     this.destroy$.next(true);
   }

@@ -1,0 +1,22 @@
+{
+  "countries": [
+    {
+      "name": "India",
+      "countrycode": "ind",
+      "states": [
+        {"name": "Delhi", "code": "ind-de"},
+        {"name": "Uttar Pradesh", "code": "ind-up"},
+        {"name": "Madhya Pradesh", "code": "ind-mp"}
+      ]
+    },
+    {
+      "name": "United states",
+      "countrycode": "usa",
+      "states": [
+        {"name": "Alabama", "code": "usa-ab"},
+        {"name": "Illinois", "code": "usa-il"},
+        {"name": "Washington", "code": "usa-wa"}
+      ]
+    }
+  ]
+}

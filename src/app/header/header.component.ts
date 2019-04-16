@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {MatTab, MatTabChangeEvent} from '@angular/material';
+import {MatTab} from '@angular/material';
 import {MatTabGroup} from "@angular/material";
 import {Router} from "@angular/router";
 import { StateStoreService} from '../services/state-store.service';
@@ -45,6 +45,11 @@ export class HeaderComponent implements OnInit {
         label : 'Notifications',
         path: 'notifications',
         iconAlias: 'supervisor_account'
+      },
+      {
+        label : 'Common Chat',
+        path: 'commanChat',
+        iconAlias: 'closed_caption'
       }
     ];
   }

@@ -5,15 +5,10 @@ import {BehaviorSubject} from "rxjs";
 
 @Injectable()
 export class SocketProviderService {
+  /**
+   * socket
+   */
   socket;
-  /**
-   * dataSource
-   */
-  public dataSource = new BehaviorSubject<any>("");
-  /**
-   * newDataSource
-   */
-  public newDataSource = this.dataSource.asObservable();
   /**
    * userTyping
    */
@@ -27,21 +22,12 @@ export class SocketProviderService {
     this.socket = io();
   }
   /**
-   * This method is to update the data for conversations
-   * @param data
-   */
-  public updateData(data: any): void {
-    this.dataSource.next(data);
-  }
-
-  /**
    * This method is to call notification list
    * @param userId
    */
   public getNotificationList(userId): void {
     this.socket.emit('get-notification-list', userId);
   }
-
   /**
    * This method is to retrieve the searched user
    */
@@ -54,7 +40,6 @@ export class SocketProviderService {
     });
     return searchUserList;
   }
-
   /**
    * This method is to call search user
    * @param data
@@ -127,7 +112,7 @@ export class SocketProviderService {
   /**
    * This method is to retrieve the friend list
    */
-  public firendList() {
+  public friendList() {
     const retrieveList = new Observable((data) => {
       this.socket.on('get-friend-list', (friendList) => {
         data.next(friendList);
@@ -147,7 +132,6 @@ export class SocketProviderService {
     });
     return requestStatus;
   }
-
   /**
    * This method is to receive the conversations
    */
@@ -170,7 +154,6 @@ export class SocketProviderService {
     });
     return messageStatus;
   }
-
   /**
    * This method is to get typing status
    */
@@ -182,48 +165,208 @@ export class SocketProviderService {
     });
     return typeStatus;
   }
-
-  public updateTypingStatus(data: any): void {
-    this.userTyping.next(data);
+  /**
+   * This method is to get login status
+   */
+  public getLoginStatus() {
+    const loginStatus = new Observable((data) => {
+      this.socket.on('login done', (response) => {
+        data.next(response);
+      });
+    });
+    return loginStatus;
+  }
+  /**
+   * This method is to get chat room name
+   */
+  public getChatRoom() {
+    const chatRoom = new Observable((data) => {
+      this.socket.on('chat-room-name', (response) => {
+        data.next(response);
+      });
+    });
+    return chatRoom;
+  }
+  /**
+   * This method is to bring the chat room user list
+   */
+  public getChatRoomUsersResponse() {
+    const chatRoomUsers = new Observable((data) => {
+      this.socket.on('get-chat-users', (response) => {
+        data.next(response);
+      });
+    });
+    return chatRoomUsers;
+  }
+  /**
+   * This method is to bring the country list with states
+   */
+  public getCountryAndStateList() {
+    const countries = new Observable((data) => {
+      this.socket.on('country-list', (response) => {
+        data.next(response);
+      });
+    });
+    return countries;
+  }
+  /**
+   * This method is to bring the chat room messages
+   */
+  public getChatRoomMsg() {
+    const chatRoomMsgs = new Observable((data) => {
+      this.socket.on('room-message', (response) => {
+        data.next(response);
+      });
+    });
+    return chatRoomMsgs;
+  }
+  /**
+   * This method is to bring the user profile detail
+   */
+  public getUserProfile() {
+    const userProfile = new Observable((data) => {
+      this.socket.on('user-profile', (response) => {
+        data.next(response);
+      });
+    });
+    return userProfile;
+  }
+  /**
+   * This method is to bring the message unread status
+   */
+  public changeMessageReadStatus() {
+    const msgStatus = new Observable((data) => {
+      this.socket.on('message-status', (response) => {
+        data.next(response);
+      });
+    });
+    return msgStatus;
+  }
+  /**
+   * This method is to load the previous messages
+   */
+  public getPreviousMessages() {
+    const previousMsgs = new Observable((data) => {
+      this.socket.on('previous-messages', (response) => {
+        data.next(response);
+      });
+    });
+    return previousMsgs;
   }
 
+  /**
+   * This method is to load the latest messages
+   */
+  public getLatestMessages() {
+    const latestMsgs = new Observable((data) => {
+      this.socket.on('latest-messages', (response) => {
+        data.next(response);
+      });
+    });
+    return latestMsgs;
+  }
+  /**
+   * This method is to send the login data
+   * @param data
+   */
   public userLogin(data): void {
     this.socket.emit('login', data);
   }
 
+  /**
+   * This method is to send the typing status
+   * @param data
+   */
   public typingStatus(data): void {
     this.socket.emit('typing', data);
   }
-
+  /**
+   * This method is to send the friend request
+   * @param data
+   */
   public sendFriendRequest(data): void {
     this.socket.emit('sent-request', data);
   }
-
+  /**
+   * This method is to send the confirmation about friend request
+   * @param data
+   */
   public confirmFriendRequest(data): void {
     this.socket.emit('confirm-friend-request', data);
   }
-
+  /**
+   * This method is to deny the friend request
+   * @param data
+   */
   public denyFriendRequest(data): void {
     this.socket.emit('deny-friend-request', data);
   }
-
+  /**
+   * This method is to send the message
+   * @param data
+   */
   public sendMessage(data): void {
     this.socket.emit('send-message', data);
   }
-
+  /**
+   * This method is to get the friend list
+   * @param id
+   */
   public getFriendList(id): void {
     this.socket.emit('friend-list', id);
   }
+  /**
+   * This method is to join the chat room
+   * @param formValues
+   */
+  public loginChatRoom(formValues): void {
+    this.socket.emit('join-chat-room', formValues);
+  }
+  /**
+   * This method is to get the chat room users
+   * @param roomName
+   */
+  public getChatRoomUsers(roomName): void {
+    this.socket.emit('chat-room-users', roomName);
+  }
+  public sendMsgtoChatRoom(msgDetail): void {
+    this.socket.emit('chat-room-message', msgDetail);
+  }
+  /**
+   * This method is to request for the country list
+   * @param id
+   */
+  public countryList(id): void {
+    this.socket.emit('req-country-list', id);
+  }
+  /**
+   * This method is to request for the user profile
+   * @param requestData
+   */
+  public reqUserProfile(requestData): void {
+    this.socket.emit('get-user-profile', requestData);
+  }
+  /**
+   * This message is to request for the message read status
+   * @param requestData
+   */
+  public updateUnreadMsgStatus(requestData): void {
+    this.socket.emit('update-read-status', requestData);
+  }
 
-  public serverInteraction() {
-    const observable = new Observable(observer => {
-      this.socket.on('login done', (data) => {
-        observer.next(data);
-      });
-      this.socket.on('new message', (chats) => {
-        observer.next(chats);
-      });
-    });
-    return observable;
+  /**
+   * This method will request for the previous messages
+   * @param requestData
+   */
+  public reqPreviousMsgs(requestData): void {
+    this.socket.emit('load-previous-messages', requestData);
+  }
+
+  /**
+   * This method is to request for the latest messages
+   * @param requestData
+   */
+  public reqLatestMsgs(requestData): void {
+    this.socket.emit('load-latest-messages', requestData)
   }
 }

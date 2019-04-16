@@ -15,7 +15,7 @@
     </button>
   </mat-menu>
 </mat-toolbar>
-<nav mat-tab-nav-bar>
+<nav mat-tab-nav-bar class="white-theme">
   <a mat-tab-link
      *ngFor="let link of navLinks"
      [routerLink]="['/'+link.path]"
@@ -24,5 +24,6 @@
     <i class="material-icons">{{link.iconAlias}}</i>
   </a>
 </nav>
+<app-new-message-notification></app-new-message-notification>
 <app-notification></app-notification>
 <app-notication-badge></app-notication-badge>

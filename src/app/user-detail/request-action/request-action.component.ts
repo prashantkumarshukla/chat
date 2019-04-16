@@ -16,6 +16,10 @@ export class RequestActionComponent implements OnInit , OnDestroy {
    */
   @Input() actionObj: any;
   /**
+   * myUserId
+   */
+  private myUserId: string;
+  /**
    * friendInfo
    */
   public friendInfo: any;
@@ -27,10 +31,7 @@ export class RequestActionComponent implements OnInit , OnDestroy {
    * destroy$
    */
   public destroy$: Subject<boolean> = new Subject<boolean>();
-  /**
-   * showSpinner
-   */
-  private showSpinner: boolean;
+
   constructor(
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService,
@@ -41,48 +42,40 @@ export class RequestActionComponent implements OnInit , OnDestroy {
   /**
    * This method is to use confirm request
    */
-  public confirmRequest(): void {
-    this.showSpinner = true;
+  private confirmRequest(): void {
     const reqObj = {
       'receiverId' : this.friendInfo.id,
       'senderId': this.stateStoreService.loggedInUser.id,
       'action' : 'Approved'
     };
     this.socketProviderService.confirmFriendRequest(reqObj);
-    this.socketProviderService.confirmRequestStatus()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(response => {
-        this.confirmRequestResp = response;
-        this.showSpinner = false;
-      });
   }
 
   /**
    * This method is to deny the friend request
    */
-  public denyRequest(): void {
-    this.showSpinner = true;
+  private denyRequest(): void {
     const reqObj = {
       'receiverId' : this.friendInfo.id,
       'senderId': this.stateStoreService.loggedInUser.id,
       'action' : 'Rejected'
     };
     this.socketProviderService.denyFriendRequest(reqObj);
-    this.socketProviderService.denyFriendRequestBack()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(response => {
-        this.confirmRequestResp = response;
-        this.showSpinner = false;
-      });
   }
 
   ngOnInit() {
     this.friendInfo = this.actionObj;
     this.confirmRequestResp = false;
-    this.showSpinner = false;
+    this.myUserId = this.stateStoreService.loggedInUserId();
+    this.socketProviderService.confirmRequestStatus().pipe(takeUntil(this.destroy$)).subscribe(response => {
+        this.confirmRequestResp = response;
+    });
+    this.socketProviderService.denyFriendRequestBack().pipe(takeUntil(this.destroy$)).subscribe(response => {
+      this.confirmRequestResp = response;
+    });
   }
 
   ngOnDestroy() {
-   this.destroy$.next(true);
+   this.destroy$.next(false);
  }
 }

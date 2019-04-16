@@ -1,23 +1,18 @@
-
-<div *ngIf="friendInfo.friendStatus === 'Pending' && !confirmRequestResp">
+<div *ngIf="(friendInfo.friendStatus === 'Pending') && (myUserId !== friendInfo.senderId); then acceptBlock else pendingBlock">
+</div>
+<ng-template #acceptBlock>
   <p>Please Accept or reject the friend request</p>
-
-  <button
-    mat-raised-button
+  <button mat-raised-button
     (click)="confirmRequest()"
     type="button">
     CONFIRM
   </button>
-  <button
-    mat-raised-button
+  <button mat-raised-button
     (click)="denyRequest()"
     type="button">
     Deny
   </button>
-</div>
-
-<div *ngIf="showSpinner">
-  <mat-progress-spinner  mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
-</div>
-
-
+</ng-template>
+<ng-template #pendingBlock>
+  <p>Your request has not yet accepted.</p>
+</ng-template>

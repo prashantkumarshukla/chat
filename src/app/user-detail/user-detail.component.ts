@@ -1,11 +1,12 @@
 import {Component, OnInit, Inject, OnDestroy, Input} from '@angular/core';
-import { HttpServiceService } from "../http-service.service";
-import { CookieService } from "ngx-cookie-service";
-import { FormBuilder, FormGroup } from "@angular/forms";
-import { SocketProviderService } from "../services/socket-provider.service";
-import { StateStoreService } from "../services/state-store.service";
-import { takeUntil} from 'rxjs/operators';
+import {CookieService} from "ngx-cookie-service";
+import {FormBuilder, FormGroup} from "@angular/forms";
+import {SocketProviderService} from "../services/socket-provider.service";
+import {StateStoreService} from "../services/state-store.service";
+import { GetUserProfileService } from "../services/get-user-profile.service";
+import {takeUntil} from 'rxjs/operators';
 import {Subject} from 'rxjs/index';
+import {FriendDetails} from "../interfaces/friend-details.interface";
 
 @Component({
   selector: 'app-user-detail',
@@ -19,13 +20,25 @@ export class UserDetailComponent implements OnInit, OnDestroy {
    */
   @Input() userDetail: any;
   /**
-   * messageForm
+   * myUserId
    */
-  public messageForm: FormGroup;
+  public myUserId: string;
+  /**
+   * friendId
+   */
+  public friendId: string;
   /**
    * friendInfo
    */
-  public friendInfo: any;
+  private friendInfo: FriendDetails;
+  /**
+   * chatReferenceId
+   */
+  private chatReferenceId: string;
+  /**
+   * messageForm
+   */
+  public messageForm: FormGroup;
   /**
    * typeResponse
    */
@@ -33,25 +46,36 @@ export class UserDetailComponent implements OnInit, OnDestroy {
   /**
    * conversations
    */
-  public conversations: any =  [];
+  public conversations: any = [];
   /**
    * destroy$
    */
   public destroy$: Subject<boolean> = new Subject<boolean>();
-
   /**
    * destroyTypeStatus$
    */
   public destroyTypeStatus$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * destoryProfile$
+   */
+  public destoryProfile$: Subject<boolean> = new Subject<boolean>();
 
-    constructor(
+  /**
+   * Constructor method
+   * @param formBuilder
+   * @param stateStore
+   * @param cookieFeatureService
+   * @param socketProviderService
+   */
+  constructor(
     private formBuilder: FormBuilder,
     private stateStore: StateStoreService,
     private cookieFeatureService: CookieService,
-    private socketProviderService: SocketProviderService
+    private socketProviderService: SocketProviderService,
+    private getUserProfileService: GetUserProfileService,
   ) {
     this.messageForm = formBuilder.group({
-      'chatMessage' : ''
+      'chatMessage': ''
     });
   }
 
@@ -61,65 +85,74 @@ export class UserDetailComponent implements OnInit, OnDestroy {
    */
   public sendMessage(MsgForm): void {
     const messagePost = {
-      'senderId' : this.stateStore.loggedInUser.id,
-      'receiverId' : this.friendInfo.id,
-      'message' : MsgForm.chatMessage
+      'sentBy': this.stateStore.loggedInUserId(),
+      'sentTo': this.stateStore.getFriendId(),
+      'message': MsgForm.chatMessage,
+      'messageId': this.stateStore.uniqueNumber(),
+      'chatReferenceId': this.chatReferenceId,
+      'unread': true
     };
-    this.stateStore.chatDetail[this.friendInfo.id].push({'me': MsgForm.chatMessage});
-    this.messageForm.reset();
     this.socketProviderService.sendMessage(messagePost);
-    this.getAllMessages();
+    this.messageForm.reset();
   }
-
-  /**
-   * This method is to build the chat history
-   */
-  public conversationBuild(chat: any): void {
-    if (chat.message) {
-      this.stateStore.chatDetail[chat.id].push({'fName': chat.fName, 'message': chat.message});
-    }
-    this.getAllMessages();
-  }
-
   /**
    * This method is to retrieve the conversations
    */
   public getAllMessages(): void {
-    this.conversations = this.stateStore.chatDetail[this.friendInfo.id];
+    this.conversations = this.stateStore.getChatConversations(this.chatReferenceId);
+    console.log("Conversations: ", this.conversations);
   }
 
+  /**
+   * This method is to retrieve the user profile
+   */
+  public getProfileDetail(): void {
+    if (this.getUserProfileService.getProfile(this.friendId)) {
+      this.friendInfo = this.getUserProfileService.getProfile(this.friendId);
+      this.chatReferenceId = this.friendInfo.chatReferenceId;
+      this.getAllMessages();
+    }
+  }
   /**
    * This method is to send typing status
    * @param typingStatus
    */
-  public userTyping(typingStatus) : void {
-    let userId = this.stateStore.loggedInUser.id;
-    let friendId = this.friendInfo.id;
-    let sendData = { "userId" : userId, "friendId" : friendId, "typing" : typingStatus };
+  public userTyping(typingStatus): void {
+    let userId = this.stateStore.loggedInUserId();
+    let sendData = {"userId": userId, "friendId": this.stateStore.getFriendId(), "typing": typingStatus};
     this.socketProviderService.typingStatus(sendData);
   }
 
+  /**
+   * This method is to return the user online status
+   */
+  public isOnline(): boolean {
+    let status = false;
+    if (this.friendInfo && this.friendInfo.isOnline) {
+      status = true;
+    }
+    return status;
+  }
 
   ngOnInit() {
-    this.friendInfo = this.stateStore.friendDetails;
-    if (!this.stateStore.chatDetail[this.friendInfo.id]) {
-      this.stateStore.chatDetail[this.friendInfo.id] = [];
-    } else {
+    this.friendId = this.stateStore.getFriendId();
+    this.myUserId = this.stateStore.loggedInUserId();
+    this.stateStore.newChatArrived.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.getAllMessages();
-    }
-    this.socketProviderService.receiveMessages()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response: []) => {
-        this.conversationBuild(response);
+    });
+    this.socketProviderService.getTypingStatus().pipe(takeUntil(this.destroyTypeStatus$))
+      .subscribe((typeResponse: boolean) => {
+        this.typeResponse = typeResponse;
       });
-    this.socketProviderService.getTypingStatus()
-      .pipe(takeUntil(this.destroyTypeStatus$))
-      .subscribe((typeReponse: boolean) => {
-        this.typeResponse = typeReponse;
-      });
+    this.getUserProfileService.newProfile.pipe(takeUntil(this.destoryProfile$)).subscribe(() => {
+      this.getProfileDetail();
+    });
+    this.getProfileDetail();
   }
 
   ngOnDestroy() {
     this.destroy$.next(true);
+    this.destroyTypeStatus$.next(false);
+    this.destoryProfile$.next(false);
   }
 }

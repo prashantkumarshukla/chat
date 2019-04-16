@@ -1,32 +1,21 @@
 <app-header></app-header>
 <mat-card *ngFor="let item of getUserList">
-
   <mat-card-content class="user-list" (click)="userDetailOpenDialog(item)">
-
-    <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
-
-    <span class='indicator' [ngClass]="{'online' : item.isOnline}"></span>
-
-    <span>{{item.name}}</span>
-
-    <div *ngIf="item.latestConversation.requestType == 'recieved'; then recievedBlock else sentBlock"></div>
-
-    <ng-template #recievedBlock>
-
-      <p class="latestMsg">{{item.latestConversation.message}}</p>
-
-    </ng-template>
-
-    <ng-template #sentBlock>
-
-      <p class="latestMsg youTag">
-
-        {{item.latestConversation.message}}
-
-      </p>
-
-    </ng-template>
-
+    <div [ngClass]="{'unread' : unReadStatus(item)}">
+        <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
+        <span class='indicator' [ngClass]="{'online' : item.userDetail.isOnline}"></span>
+        <span class="pl-3">{{item.userDetail.fName}} {{item.userDetail.lName}}</span>
+        <div *ngIf="unReadStatus(item); then receivedBlock else sentBlock"></div>
+        <ng-template #receivedBlock>
+          <div>
+            <p class="latestMsg pl-5 font-italic">{{item.userDetail.fName}}: {{item.chatItem.message}}</p>
+          </div>
+        </ng-template>
+        <ng-template #sentBlock>
+          <div>
+            <p class="latestMsg pl-5 youTag font-italic">{{item.chatItem.message}}</p>
+          </div>
+        </ng-template>
+    </div>
   </mat-card-content>
-
 </mat-card>

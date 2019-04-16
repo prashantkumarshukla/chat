@@ -14,17 +14,18 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    var myquery = { };
+    var myquery = {$or: [{receiverId: '1526963353566'}, {senderId: '1526963353566'}]};
 
-    dbo.collection('friendList')
-      .deleteMany(myquery, function(err, result) {
+    dbo.collection('chatReference')
+      .find(myquery).toArray(function(err, result) {
 
       if(err) {
-
         console.log('Query not executed: ' +  err);
       } else {
-
-        console.log('Record delted');
+        console.log('Query executed', result);
+        result.forEach(function (response) {
+          //console.log(response);
+        });
 
         db.close();
       }

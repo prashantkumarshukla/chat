@@ -14,20 +14,20 @@ mongoClient.connect(mongoUrl, function (err,db) {
 
     var dbo = db.db('chatdb');
 
-    var myquery = { };
+    var myquery = {};
 
-    dbo.collection('friendList')
-      .deleteMany(myquery, function(err, result) {
+    dbo.collection('chatReference')
+      .deleteOne(myquery, function(err, result) {
 
-      if(err) {
+        if(err) {
 
-        console.log('Query not executed: ' +  err);
-      } else {
+          console.log('Query not executed: ' +  err);
+        } else {
 
-        console.log('Record delted');
+          console.log('Record delted');
 
-        db.close();
-      }
-    });
+          db.close();
+        }
+      });
   }
 });

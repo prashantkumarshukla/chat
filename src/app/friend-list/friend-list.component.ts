@@ -7,6 +7,7 @@ import {takeUntil} from "rxjs/operators";
 import {Subject} from "rxjs";
 import { Router} from '@angular/router';
 import { StateStoreService } from "../services/state-store.service";
+import { FriendListService } from "../services/friend-list.service";
 
 
 @Component({
@@ -19,48 +20,42 @@ export class FriendListComponent implements OnInit, OnDestroy {
   /**
    * friendList
    */
-  public friendList: any;
+  public friendList: any = [];
   /**
    * destroy$
    */
   public destroy$: Subject<boolean> = new Subject<boolean>();
-  /**
-   * showSpinner
-   */
-  private showSpinner: boolean;
 
   constructor(
     private cookieService: CookieService,
     private socketProviderService: SocketProviderService,
     private router: Router,
-    private stateStoreService: StateStoreService
+    private stateStoreService: StateStoreService,
+    private friendListService: FriendListService
   ) { }
 
   /**
-   * This method is to retrieve the friend list
+   * This method is to pull the friend list
    */
-  public retrieveFriendList(): void {
-    this.showSpinner = true;
-    this.socketProviderService.getFriendList(this.stateStoreService.loggedInUser.id);
-    this.socketProviderService.firendList()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(friendList => {
-        this.friendList = friendList;
-        this.showSpinner = false;
-        console.log('Friend list is: ' + JSON.stringify(this.friendList));
-      });
+  public pullFriendList(): void {
+    this.friendList = this.friendListService.getMyFriendList();
   }
-
   /**
    * This method is to navigate the user detail page
    * @param friend
    */
   public userDetailOpenDialog(friend: any) {
-    this.stateStoreService.friendDetails = friend;
+    this.stateStoreService.setFriendId(friend.id);
+    let getProfileInfo = {userId: this.stateStoreService.loggedInUserId(), friendId: friend.id};
+    this.socketProviderService.reqUserProfile(getProfileInfo);
     this.router.navigate(['/user']);
   }
   ngOnInit() {
-    this.retrieveFriendList();
+    this.friendListService.newFriend
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((friendList) => {
+        this.pullFriendList();
+      });
   }
 
   ngOnDestroy() {

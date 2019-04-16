@@ -1,15 +1,13 @@
-import {Component, Input, OnInit, OnDestroy} from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { MatTabGroup } from "@angular/material";
-import { FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { FormBuilder, FormGroup } from "@angular/forms";
 import { HttpServiceService } from "../http-service.service";
-import {UserSearchService} from "./user-search.service";
 import { StateStoreService } from "../services/state-store.service";
-import {SocketProviderService} from "../services/socket-provider.service";
+import { SocketProviderService } from "../services/socket-provider.service";
 import { Router } from "@angular/router";
-import {Subscription} from "rxjs";
 import { CookieService } from "ngx-cookie-service";
-import {Subject} from "rxjs";
-import {takeUntil} from "rxjs/operators";
+import { Subject } from "rxjs";
+import { takeUntil } from "rxjs/operators";
 
 @Component({
   selector: 'app-search-user',
@@ -19,48 +17,60 @@ import {takeUntil} from "rxjs/operators";
 })
 export class SearchUserComponent implements OnInit, OnDestroy {
 
-  searchform: FormGroup;
-  public searchResponse: any;
-  private searchSubscription: Subscription;
-  private userId: any;
-  destroy$: Subject<boolean> = new Subject<boolean>();
+  /**
+   * searchForm
+   */
+  private searchForm: FormGroup;
+  /**
+   * searchResponse
+   */
+  private searchResponse: any;
+  /**
+   * destroy$
+   */
+  private destroy$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
     private formBuilder: FormBuilder,
     private httpService: HttpServiceService,
-    private userSearchService: UserSearchService,
     private socketProviderService: SocketProviderService,
     private stateStoreService: StateStoreService,
     private cookieFeatureService: CookieService,
     private router: Router
   ) {
-    this.searchform = formBuilder.group({
+    this.searchForm = formBuilder.group({
       'searchField' : ''
     });
   }
 
-  public searchUser(searchString): void {
+  /**
+   * This method is to send the search string
+   * @param searchString
+   */
+  private searchUser(searchString): void {
     const searchObj = {
-      'id': this.userId,
+      'id': this.stateStoreService.loggedInUserId(),
       'searchString': searchString.searchField
     };
     this.socketProviderService.searchUser(searchObj);
+  }
 
+  /**
+   * This method is to reirect to the user detail page
+   * @param friendInfo
+   */
+  public userDetail(friendInfo): void {
+    this.stateStoreService.setFriendId(friendInfo.id);
+    this.router.navigate(['/user']);
+  }
+
+  ngOnInit() {
     this.socketProviderService.retrieveSearchUser()
       .pipe(takeUntil(this.destroy$))
       .subscribe(searchList => {
         this.searchResponse = searchList;
         console.log('Search list is: ' + JSON.stringify(this.searchResponse));
       });
-  }
-
-  public userDetail(friendInfo): void {
-    this.stateStoreService.friendDetails = friendInfo;
-    this.router.navigate(['/user']);
-  }
-
-  ngOnInit() {
-    this.userId = this.stateStoreService.loggedInUser.id;
   }
 
   ngOnDestroy() {

@@ -1,5 +1,5 @@
 <app-header></app-header>
-<mat-card>
+<mat-card class="user-chat-pane" *ngIf="friendInfo">
   <mat-card-content>
     <mat-card-header>
       <div mat-card-avatar
@@ -9,7 +9,7 @@
         {{friendInfo.fName}} {{friendInfo.lName}}
       </mat-card-title>
       <p></p>
-      <mat-card-subtitle *ngIf="friendInfo.isOnline; then onlineBlock else offLineBlock">
+      <mat-card-subtitle *ngIf="isOnline(); then onlineBlock else offLineBlock">
       </mat-card-subtitle>
       <ng-template #onlineBlock>
         <span class="user-indicator online"></span>
@@ -31,11 +31,11 @@
       <hr />
       <div class="chat-pane">
         <div *ngFor="let chat of conversations">
-            <div class="sent text-right" *ngIf="chat.me">
-              <b>  Me:</b> {{chat.me}}
+            <div class="sent text-right" *ngIf="myUserId === chat.sentBy">
+              <b>  Me:</b> {{chat.message}}
             </div>
-            <div class="received" *ngIf="chat.message">
-              <b> {{chat.fName}}:</b> {{chat.message}}
+            <div class="received" *ngIf="myUserId !== chat.sentBy">
+              <b> {{friendInfo.fName}}:</b> {{chat.message}}
             </div>
         </div>
       </div>

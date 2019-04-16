@@ -9,8 +9,15 @@ var dbCollectionName = {
   'friendList' : 'friendList',
   'conversations' : 'conversations'
 };
-
+var dbConnect = require('./server/database-connection-util');
 var dbScripts = require('./server/database-scripts');
+var chatRooms = require('./server/chatrooms');
+var utility = require('./server/utility');
+var friendListUtility = require("./server/friend-list");
+var searchUserUtility = require('./server/search-user');
+var userProfileUtility = require("./server/user-profile");
+var chatConversationUtility = require('./server/database-conversation');
+var loadMessages = require('./server/load-messages');
 
 var path = require('path');
 var http = require('http');
@@ -39,13 +46,15 @@ server.listen(app.get('port'), function() {
   console.log('App is running, server is listening on port ', app.get('port'));
 });
 
+chatRooms.createRoom().then(function (rooms) {
+  console.log("Common chat rooms created: ", rooms);
+});
+
 io.sockets.on('connection', function(socket) {
   socket.on("login", function (userdata) {
-    var userStatus = false;
-    var filterData = {email: userdata.userName};
     var data = {};
     var getUserId = "";
-    findQueryInDB(dbCollectionName.userProfile,  filterData, function (result) {
+    dbScripts.userLogin(userdata).then(function (result) {
       if (result[0].userPwd === userdata.userPassword) {
         socket.userId = result[0].id;
         users[socket.userId] = socket;
@@ -56,65 +65,32 @@ io.sockets.on('connection', function(socket) {
       } else {
         console.log("===========Login Failed=============");
         data = {"status": false};
-        users[getUserId].emit('login done', data);
+        io.to[getUserId].emit('login done', data);
         console.log("===================================================");
       }
     });
   });
-
+  socket.on("load-latest-messages", function (request) {
+    loadMessages.latestMessages(request).then(function (response) {
+      if (response) {
+        users[request].emit('latest-messages', response);
+      }
+    });
+  });
+  socket.on("load-previous-messages", function (request) {
+    var data = {};
+    users[request.id].emit('previous-messages', data);
+  });
   socket.on("friend-list", function (request) {
-    dbScripts.friendList(request).then(function (response) {
-      var Ids = [];
-      response.forEach(function(data) {
-        if (data.senderId !== request) {
-          Ids.push(data.senderId);
-        }
-        if (data.receiverId !== request) {
-          Ids.push(data.receiverId);
-        }
-      });
-      dbScripts.userProfiles(Ids).then(function (usersProfileResp) {
-        var buildResponse = [];
-        usersProfileResp.forEach(function (detail) {
-          detail.isFriend = true;
-          detail.friendStatus = 'Approved';
-          detail.isOnline = users[detail.id] ? true : false;
-          buildResponse.push(detail);
-        });
-        users[request].emit('get-friend-list', buildResponse);
-      });
+    friendListUtility.getFriendList(request, users).then(function (response) {
+      users[request].emit('get-friend-list', response);
     });
   });
-
   socket.on("search-user", function (searchData) {
-    dbScripts.searchUserProfile(searchData).then(function (searchResponse) {
-      var buildResponse = [];
-      searchResponse.forEach(function (data) {
-        dbScripts.validateFriendList(data.id, searchData.id).then(function (friendResponse) {
-          if (friendResponse.length === 0) {
-            dbScripts.validateFriendList(searchData.id, data.id).then(function (newFriendResponse) {
-              if (newFriendResponse.length > 0) {
-                newFriendResponse.forEach( function (value) {
-                  value.friendStatus = value.status;
-                  value.isFriend = true;
-                  buildResponse.push(value);
-                });
-              }
-            });
-          } else {
-            friendResponse.isFriend = true;
-            friendResponse.friendStatus = friendResponse.status;
-            buildResponse.push(friendResponse);
-          }
-        });
-        buildResponse.push(data);
-      });
-      users[searchData.id].emit('search-user-list', buildResponse);
-    }).catch(function (reason) {
-      console.log("Error in execution: ", reason)
+    searchUserUtility.searchUser(searchData).then(function (response) {
+      users[searchData.id].emit('search-user-list', response);
     });
   });
-
   socket.on("get-notification-list", function (request) {
     dbScripts.friendRequest(request).then(function (response) {
       var senderIds = [];
@@ -132,13 +108,10 @@ io.sockets.on('connection', function(socket) {
             buildResponse.push(userData);
           });
           users[request].emit('get-notifications', buildResponse);
-          //users[request].emit('new-request', buildResponse.length);
         });
       }
     });
   });
-
-
   socket.on("confirm-friend-request", function (request) {
     dbScripts.confirmFriendRequest(request).then(function (value) {
       console.log("Request confirm: ", value);
@@ -153,14 +126,11 @@ io.sockets.on('connection', function(socket) {
       }
     });
   });
-
-
   socket.on("deny-friend-request", function (request) {
     dbScripts.denyFriendRequest(request).then(function (response) {
       users[request.senderId].emit('deny-request', true);
     });
   });
-
   socket.on("sent-request", function (reqData) {
     dbScripts.newFriendRequest(reqData).then(function (response) {
       var successResponse = {
@@ -178,51 +148,86 @@ io.sockets.on('connection', function(socket) {
       }
     });
   });
-
-  socket.on('send-message', function (request) {
-    var Ids = [];
-    var isOnline = users[request.receiverId] ? true : false;
-    Ids.push(request.senderId);
-    dbScripts.userProfiles(Ids).then(function (response) {
-      console.log("User Profile: ", response);
-      var detail = {};
-      detail.fName = response[0].fName;
-      detail.lName = response[0].lName;
-      detail.gender = response[0].gender;
-      detail.id = response[0].id;
-      dbScripts.saveConversations(request).then(function (conversationDetails) {
-        if (isOnline) {
-          dbScripts.friendListWithAllStatus(request.senderId).then(function (userDetails) {
-            if(userDetails.length > 0) {
-              detail.isFriend = userDetails[0].status === 'Approved' ? true : false;
-              detail.friendStatus = userDetails[0].status;
-              detail.isOnline = isOnline;
-              detail.message = request.message;
-              console.log("M1: ", detail);
-              users[request.receiverId].emit('receive-message', detail);
-            }
-          });
-        }
-        console.log("To Sender: ", conversationDetails);
-        users[request.senderId].emit('message-sent', conversationDetails);
-      });
+  socket.on("get-user-profile", function (request) {
+    userProfileUtility.getUserProfile(request, users).then(function (response) {
+      users[request.userId].emit('user-profile', response);
     });
   });
-
-  socket.on('typing', function (request) {
-    if (users[request.friendId]) {
-      users[request.friendId].emit('user-is-typing', true);
+  socket.on('send-message', function (detail) {
+    console.log("Sender Detail: ", detail);
+    detail.currentDate = new Date();
+    // The below logic is to update the data and emit it to friend if chat reference id find in request
+    if (detail.chatReferenceId) {
+      chatConversationUtility.chatReferenceIdExistAndUpdateMessage(detail).then(function (response) {
+        if (users[detail.sentTo]) {
+          users[detail.sentTo].emit('receive-message', detail);
+        }
+        console.log("Message Sent: ", detail);
+        users[detail.sentBy].emit('receive-message', detail);
+      });
+    } else { // The below logic is to update the data and emit to friend if chat reference id not exist in request
+      chatConversationUtility.chatReferenceIdNotExist(detail).then(function (response) {
+        chatConversationUtility.chatReferenceIdExistAndUpdateMessage(response).then(function (updatedResponse) {
+          if (users[detail.sentTo]) {
+            users[detail.sentTo].emit('receive-message', detail);
+          }
+          console.log("Message Sent: ", detail);
+          users[detail.sentBy].emit('receive-message', detail);
+        });
+      });
     }
   });
+  socket.on('update-read-status', function (request) {
+    chatConversationUtility.updateMessageReadStatus(request).then(function (response) {
+      request.status = response;
+      users[request.userId].emit('message-status', request);
+    });
+  });
+  socket.on('typing', function (request) {
+    if (users[request.friendId]) {
+      users[request.friendId].emit('user-is-typing', request.typing);
+    }
+  });
+  socket.on('join-chat-room', function (request) {
+    console.log("Joining chat room", request);
+    socket.join(request.chatRoom);
+    console.log("Room joined");
+    chatRooms.roomUsers(request).then(function (response) {
+      console.log("response", response);
+      var buildResponse = {
+        room: request.chatRoom,
+        nickName: request.nickName
+      };
+      users[request.id].emit('chat-room-name', buildResponse);
+    });
+  });
+  socket.on('chat-room-users', function (request) {
+    var roomName = request.trim();
+    chatRooms.getChatRoomUsers(roomName).then(function (response) {
+      console.log("Room: ", roomName);
+      io.to(roomName).emit('get-chat-users', response);
+      console.log("Emitted");
+    });
+  });
+  socket.on('chat-room-message', function (request) {
+    var buildResponse = {
+      message: request.message,
+      userName: request.nickName,
+      roomUserId: request.userId
+    };
+    io.to(request.room).emit('room-message', buildResponse);
+  });
+  socket.on('req-country-list', function (request) {
+    chatRooms.countryList().then(function (response) {
+      users[request].emit('country-list', response);
+    });
+  })
 });
 
   var bodyParser = require('body-parser');
-
   function listening() {
     console.log("Server is running...");
   }
-
-
   app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -233,153 +238,44 @@ io.sockets.on('connection', function(socket) {
   app.use(bodyParser.json());
   app.post('/register', registerUser);
 
-  function findQueryInDB(collectionName, data, callback) {
-    mongoClient.connect(mongoUrl, function (err, db) {
-      if (err) {
-        console.log('Database not connected: ' + err);
-        callback(false);
-      } else {
-        var dbo = db.db(dbName);
-        dbo.collection(collectionName)
-          .find(data).toArray(function (err, result) {
-          if (err) {
-            console.log('Query not executed: ' + err);
-            callback(false);
-          } else {
-            callback(result);
-            db.close();
-          }
-        });
-      }
-    });
-  }
-
-  function insertInDB(collectionName, data, callback) {
-    mongoClient.connect(mongoUrl, function (err, db) {
-      if (err) {
-        console.log('Database not connected: ' + err);
-        callback(false);
-      } else {
-        var dbo = db.db(dbName);
-        dbo.collection(collectionName)
-          .insertOne(data, function (err, res) {
-            if (err) {
-              console.log('Data insertion failed: ' + err);
-              callback(false);
-            } else {
-              console.log(res.insertedCount + ': Data inserted successfully ');
-              callback(true);
-              db.close();
-            }
-          });
-      }
-    });
-  }
-
-
-function deleteFromDB(collectionName, query, callback) {
-  mongoClient.connect(mongoUrl, function (err, db) {
-    if (err) {
-      console.log('Database not connected: ' + err);
-      callback(false);
-    } else {
-      var dbo = db.db(dbName);
-      dbo.collection(collectionName)
-        .deleteOne(query, function (err, res) {
-          if (err) {
-            console.log('Data Deletion failed: ' + err);
-            callback(false);
-          } else {
-            console.log(res.insertedCount + ': Data Deletion successfully ');
-            callback(true);
-            db.close();
-          }
-        });
-    }
-  });
-}
-
-  function updateInDB(collectionName, filter, data, callback) {
-    mongoClient.connect(mongoUrl, function (err, db) {
-    if (err) {
-      console.log('Database not connected: ' + err);
-      callback(false);
-    } else {
-      var dbo = db.db(dbName);
-      dbo.collection(collectionName)
-        .updateOne(filter, data, function (err, res) {
-          if (err) {
-            console.log('Data updation failed: ' + err);
-            callback(false);
-          } else {
-            console.log(res.insertedCount + ': Data updated successfully ');
-            callback(true);
-            db.close();
-          }
-        });
-    }
-  });
-    }
-
   function registerUser(req, res, next) {
-
     var msg = {};
-
     var filterData = {email: 1};
-
     var data = req.body;
-
-    findQueryInDB(dbCollectionName.userProfile, filterData, function (result) {
-
+    dbConnect.findQueryInDB(dbCollectionName.userProfile, filterData, function (result) {
       var userExist = false;
-
       for (var i = 0; i < result.length; i++) {
-
         console.log('Email id is : ' + result[i].email);
-
         if (result[i].email === data.email) {
-
           userExist = true;
-
           msg = {
-
             'status': false,
             'responseCode': 200,
             'info': 'User Already Exist'
           };
-
           console.log(msg.info);
-
           break;
         }
       }
 
       if (!userExist) {
-
-        insertInDB(dbCollectionName.userProfile, data, function (response) {
-
+        dbConnect.insertInDB(dbCollectionName.userProfile, data, function (response) {
           if (response) {
-
             msg = {
-
               'status': true,
               'responseCode': 200,
               'info': 'User successfully registered'
             };
           } else {
-
             msg = {
-
               'status': false,
               'responseCode': 503,
               'info': 'DB insertion failed'
             };
           }
-
           console.log(msg.info);
           res.send(msg);
         });
       }
     });
   }
-

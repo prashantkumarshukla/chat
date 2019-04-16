@@ -1,13 +1,10 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import { MatTabGroup } from "@angular/material";
 import { MatTab } from "@angular/material";
-import { ModalService } from "../modal/modal.service";
+
 import { FormBuilder, FormGroup, Validators } from "@angular/forms";
-import { FacebookService, LoginResponse, InitParams } from "ngx-facebook";
 import { CreateUserService } from "../login-panel/create-user.service" ;
-import { RegistrationFormComponent } from "../registration-form/registration-form.component";
 import { Router } from "@angular/router";
-import { MatDialog } from "@angular/material";
 import { CookieService } from "ngx-cookie-service";
 import { SocketProviderService } from "../services/socket-provider.service";
 import {Subscription} from "rxjs";
@@ -25,10 +22,7 @@ import { StateStoreService} from '../services/state-store.service';
     MatTab
   ]
 })
-export class LoginPanelComponent implements OnInit {
-
-  modalId = 'hoplaModal';
-  dialogResult = "";
+export class LoginPanelComponent implements OnInit, OnDestroy {
 
   rForm: FormGroup;
   loginform : FormGroup;
@@ -43,13 +37,10 @@ export class LoginPanelComponent implements OnInit {
   unsubscribe$: Subject<boolean> = new Subject<boolean>();
 
   constructor(
-    public modalService: ModalService,
-    private fb: FacebookService,
     private formBuilder: FormBuilder,
     private loginFormBuilder: FormBuilder,
     private createUserService: CreateUserService,
     private router: Router,
-    public dialog: MatDialog,
     private cookieFeatureService: CookieService,
     private socketProviderService: SocketProviderService,
     private stateStoreService: StateStoreService
@@ -73,96 +64,27 @@ export class LoginPanelComponent implements OnInit {
       'gender' : [null, Validators.required],
       'validate' : ''
     });
-
-    //Facebook initiate
-    let initParams: InitParams = {
-      appId: '828011440700346',
-      xfbml: true,
-      version: 'v2.8'
-    };
-
-    fb.init(initParams);
-
-  }
-
-  login() {
-    this.fb.login()
-      .then((res: LoginResponse) => {
-        console.log('Logged in', res);
-        this.getProfile();
-        this.getFriends();
-      })
-      .catch(this.handleError);
-  }
-
-  getLoginStatus() {
-    this.fb.getLoginStatus()
-      .then(console.log.bind(console))
-      .catch(console.error.bind(console));
-  }
-
-  getProfile() {
-    this.fb.api('/me')
-      .then((res: any) => {
-        console.log('Got the users profile', res);
-      })
-      .catch(this.handleError);
-  }
-
-  getFriends() {
-    this.fb.api('/me/friends')
-      .then((res: any) => {
-        console.log('Got the users friends', res);
-      })
-      .catch(this.handleError);
-  }
-
-  private handleError(error) {
-    console.error('Error processing action', error);
-  }
-
-  registerUser(post) : void {
-    var dob = post.month + "/" + post.day + "/" + post.year;
-    post.birthday = dob;
-    post.id=new Date().valueOf().toString();
-    post.type = "normal";
-    delete post['month'];
-    delete post['day'];
-    delete post['year'];
-    delete post['validate'];
-    this.createUserService.createUser(post).subscribe(res => this.statusResponse = res );
   }
 
   uerLogin(data) : void {
       this.socketProviderService.userLogin(data);
   }
 
-  openDialog() {
-    let dialogRef = this.dialog.open(RegistrationFormComponent,{
-      width: '87%',
-      data : 'This text is passed into the dialog'
-    });
-    dialogRef.afterClosed().subscribe(result =>{
-      console.log(`Dialog closed: ${result}`);
-      this.dialogResult = result;
-    });
-  }
-
   ngOnInit() {
-    this.loginSubscription = this.socketProviderService.serverInteraction()
+    this.loginSubscription = this.socketProviderService.getLoginStatus()
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe(status => {
-        console.log('Status is:', status);
         this.statusResponse = status;
         if (this.statusResponse.success) {
           this.cookieFeatureService.set('user', this.statusResponse.id);
-          this.stateStoreService.loggedInUser = this.statusResponse;
+          console.log("Logged in user details: ", this.statusResponse);
+          this.stateStoreService.setLoggedInUserDetails(this.statusResponse);
           this.router.navigate(['/chat']);
         }
     });
   }
- /* ngOnDestroy() {
-    this.unsubscribe$.next(true);
-    this.loginSubscription.unsubscribe();
-  }*/
+
+ ngOnDestroy() {
+   this.unsubscribe$.next(true);
+ }
 }

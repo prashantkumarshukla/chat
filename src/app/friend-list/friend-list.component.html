@@ -1,18 +1,11 @@
 <app-header></app-header>
-<mat-card *ngFor="let user of friendList" (click)="userDetailOpenDialog(user)">
-
-  <mat-card-content class="user-list">
-
+<mat-card>
+  <mat-card-content class="user-list"
+                    *ngFor="let user of friendList"
+                    (click)="userDetailOpenDialog(user)">
     <i class="fa fa-user-circle-o fa-2x" aria-hidden="true"></i>
-
-    <span class='indicator' [ngClass]="{'online' : user.isOnline}"></span>
-
+    <span class='indicator'
+          [ngClass]="{'online' : user.isOnline}"></span>
     <span>{{user.fName}} {{user.lName}}</span>
-
   </mat-card-content>
-
 </mat-card>
-
-<div *ngIf="showSpinner">
-  <mat-progress-spinner  mode="indeterminate" style="margin: 0 auto"></mat-progress-spinner>
-</div>
